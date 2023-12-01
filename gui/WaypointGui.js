@@ -1,0 +1,606 @@
+import {
+    UIBlock,
+    FillConstraint,
+    UIRoundedRectangle,
+    CenterConstraint,
+    SubtractiveConstraint,
+    UIText,
+    AdditiveConstraint,
+    SiblingConstraint,
+    animate,
+    Animations, 
+    ConstantColorConstraint,
+    UITextInput,
+    UIImage,
+    AspectConstraint,
+    WindowScreen,
+    ScrollComponent,
+} from "../../Elementa";
+import { createServerWaypoint, createWaypoint, getServer, getServerName, getWaypoints, removeServerWaypoint, removeWaypoint, waypoints } from "../waypoints";
+
+const Color = Java.type("java.awt.Color");
+const URL = Java.type("java.net.URL")
+
+export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(Player.getX()) + "," + Math.round(Player.getY()) + "," + Math.round(Player.getZ())) {
+    const window = new UIBlock()
+        .setX((0).pixels())
+        .setY((0).pixels())
+        .setWidth(new FillConstraint())
+        .setHeight(new FillConstraint())
+        .setColor(new Color(0, 0, 0, 0));
+
+    const block = new UIRoundedRectangle(7.5)
+        .setColor(new Color(0, 0, 0, 150 / 255))
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setWidth(new SubtractiveConstraint(new FillConstraint(), (30).pixels()))
+        .setHeight(new SubtractiveConstraint(new FillConstraint(), (30).pixels()))
+        .setChildOf(window);
+
+
+    const image = UIImage.Companion.ofURL(new URL("https://i.imgur.com/hlDUhZo.png"))
+        .setX((5).percent())
+        .setY(new CenterConstraint())
+        .setWidth((256).pixels())
+        .setHeight(new AspectConstraint())
+        .setChildOf(block);
+
+    var waypointsDropped = false;
+    const dropBlock = new UIBlock()
+        .setX(new AdditiveConstraint((5).percent(), (2).pixels()))
+        .setY(new AdditiveConstraint(new SiblingConstraint(), (1).percent()))
+        .setWidth((252).pixels())
+        .setHeight((20).pixels())
+        .setColor(new Color(21 / 255, 24 / 255, 28 / 255, 1))
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.2, new ConstantColorConstraint(new Color(17 / 255, 19 / 255, 22 / 255, 1)));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.IN_EXP, 0.2, new ConstantColorConstraint(new Color(21 / 255, 24 / 255, 28 / 255, 1)));
+            });
+        })
+        .setChildOf(block);
+
+    const dropName = new UIText("Create new waypoint...", false)
+        .setX((5).percent())
+        .setY(new CenterConstraint())
+        .setChildOf(dropBlock);
+
+//˄˅
+    const dropIcon = new UIText("˅", false)
+        .setX(new SubtractiveConstraint((100).percent(), (12).pixels()))
+        .setY((25).percent())
+        .setWidth((8).pixels())
+        .setChildOf(dropBlock);
+
+    const waypoints = new ScrollComponent()
+        .setX(new AdditiveConstraint((5).percent(), (4).pixels()))
+        .setY(new SiblingConstraint(1))
+        .setWidth((248).pixels())
+        .setHeight((90).pixels())
+        .setChildOf(block);
+    
+    var dropWaypoints = [];
+    var dropTexts = [];
+
+    var dropWaypoint = new UIBlock()
+        .setX((0).pixels())
+        .setY(new SiblingConstraint())
+        .setWidth((100).percent())
+        .setHeight((12).pixels())
+        .setColor(new Color(5 / 255, 24 / 255, 10 / 255, 1))
+        .onMouseClick(() => {
+            textInput1.setText(name);
+            textInput2.setText(coordinates);
+            textInput3.setText(getServerName())
+            dropName.setText("Create new waypoint...");
+        })
+        .setChildOf(waypoints);
+    dropWaypoints.push(dropWaypoint);
+    var dropText = new UIText("Create new waypoint...", false)
+        .setX((5).percent())
+        .setY(new CenterConstraint())
+        .setChildOf(dropWaypoint);
+    dropTexts.push(dropText);
+
+    const waypointsArray = [];
+    getWaypoints().forEach(servers => {
+        servers.waypoints.forEach(serverWaypoint => {
+            waypointsArray.push(serverWaypoint);
+        })
+    })
+    for(var i = 0; i < waypointsArray.length; i++) {
+        var waypoint = waypointsArray[i];
+
+        var displayName = waypoint.name.substring(0, 35);
+        if(!waypoint.name.equals(displayName)) displayName = displayName + "...";
+
+        var color = new Color(28 / 255, 34 / 255, 35 / 255);
+        if(i % 2 == 0) {
+            color = new Color(31 / 255, 36 / 255, 37 / 255);
+        }
+
+        dropWaypoint = new UIBlock()
+            .setX((0).pixels())
+            .setY(new SiblingConstraint())
+            .setWidth((100).percent())
+            .setHeight((12).pixels())
+            .setColor(color)
+            .onMouseClick(() => {
+                textInput1.setText(waypoint.name);
+                textInput2.setText(waypoint.location);
+                getWaypoints().forEach((server) => {
+                    var serverName = server.server;
+                    server.waypoints.forEach(serverWaypoint => {
+                        if(serverWaypoint.name.equals(waypoint.name)) {
+                            textInput3.setText(serverName);
+                        }
+                    });
+                });
+                //textInput3.setText()
+                dropName.setText(displayName);
+            })
+            .setChildOf(waypoints);
+        dropWaypoints.push(dropWaypoint);
+
+        dropText = new UIText(displayName, false)
+            .setX((5).percent())
+            .setY(new CenterConstraint())
+            .setChildOf(dropWaypoint);
+        dropTexts.push(dropText);
+    }
+    dropTexts = dropTexts.reverse();
+    dropWaypoints = dropWaypoints.reverse();
+    
+    dropBlock.onMouseClick(() => {
+        if(waypointsDropped) {
+            dropIcon.setText("˅");
+            dropWaypoints.forEach(waypointElement => {
+                waypointElement.unhide(true);
+            });
+            dropTexts.forEach(textElement => {
+                textElement.unhide(true);
+            });
+        } else {
+            dropIcon.setText("\u02c4")
+            dropWaypoints.forEach(waypointElement => {
+                waypointElement.hide();
+            });
+            dropTexts.forEach(textElement => {
+                textElement.hide();
+            });
+        }
+        waypointsDropped = !waypointsDropped;
+    });
+
+    const text1 = new UIText("Waypoint Name", true)
+        .setX(new AdditiveConstraint(new CenterConstraint(), (12).percent()))
+        .setY((20).percent())
+        .setTextScale((2).pixels())
+        .setChildOf(block);
+
+    const textInputBlock1 = new UIRoundedRectangle(5)
+        .setColor(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255))
+        .setX(new AdditiveConstraint(new CenterConstraint(), (12).percent()))
+        .setY(new AdditiveConstraint(new SiblingConstraint(), (10).pixels()))
+        .setWidth((300).pixels())
+        .setHeight((18).pixels())
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.2, new ConstantColorConstraint(new Color(20 / 255, 20 / 255, 20 / 255, 255 / 255)));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.IN_EXP, 0.2, new ConstantColorConstraint(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255)));
+            });
+        })
+        .onMouseClick(() => {
+            textInput1.grabWindowFocus();
+        })
+        .setChildOf(block);
+
+    const textInput1 = new UITextInput(name)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setWidth((250).pixels())
+        .setChildOf(textInputBlock1);
+
+    const text3 = new UIText("Server Name", true)
+        .setX(new AdditiveConstraint(new CenterConstraint(), (12).percent()))
+        .setY(new AdditiveConstraint(new SiblingConstraint(), (12).percent()))
+        .setTextScale((2).pixels())
+        .setChildOf(block);
+
+    const textInputBlock3 = new UIRoundedRectangle(5)
+        .setColor(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255))
+        .setX(new AdditiveConstraint(new CenterConstraint(), (12).percent()))
+        .setY(new AdditiveConstraint(new SiblingConstraint(), (10).pixels()))
+        .setWidth((300).pixels())
+        .setHeight((18).pixels())
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.2, new ConstantColorConstraint(new Color(20 / 255, 20 / 255, 20 / 255, 255 / 255)));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.IN_EXP, 0.2, new ConstantColorConstraint(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255)));
+            });
+        })
+        .onMouseClick(() => {
+            textInput3.grabWindowFocus();
+        })
+        .setChildOf(block);
+
+    const textInput3 = new UITextInput(getServerName())
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setWidth((250).pixels())
+        .setChildOf(textInputBlock3);
+
+    const text2 = new UIText("Coordinates (x,y,z)", true)
+        .setX(new AdditiveConstraint(new CenterConstraint(), (12).percent()))
+        .setY(new AdditiveConstraint(new SiblingConstraint(), (12).percent()))
+        .setTextScale((2).pixels())
+        .setChildOf(block);
+
+    const textInputBlock2 = new UIRoundedRectangle(5)
+        .setColor(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255))
+        .setX(new AdditiveConstraint(new CenterConstraint(), (12).percent()))
+        .setY(new AdditiveConstraint(new SiblingConstraint(), (10).pixels()))
+        .setWidth((300).pixels())
+        .setHeight((18).pixels())
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.2, new ConstantColorConstraint(new Color(20 / 255, 20 / 255, 20 / 255, 255 / 255)));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.IN_EXP, 0.2, new ConstantColorConstraint(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255)));
+            });
+        })
+        .onMouseClick(() => {
+            textInput2.grabWindowFocus();
+        })
+        .setChildOf(block);
+
+    const textInput2 = new UITextInput(coordinates)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setWidth((250).pixels())
+        .onKeyType(() => {
+            var inputCoords = textInput2.getText();
+            if (textInput2.getText().trim().length === 0) {
+                inputCoords = coordinates;
+            }
+            if (!/^[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}(?=\s|$)/g.exec(inputCoords)) {
+                textImageInvalid.setColor(new Color(1, 0, 0, 1));
+                blockImageInvalid.setColor(new Color(0, 0, 0, 0.66));
+                icon.setWidth((0).pixels());
+            } else {
+                textImageInvalid.setColor(new Color(1, 0, 0, 0));
+                blockImageInvalid.setColor(new Color(0, 0, 0, 0));
+                icon.setWidth((16).pixels());
+                var x = inputCoords.split(",")[0];
+                var y = inputCoords.split(",")[1];
+                var z = inputCoords.split(",")[2];
+                x = Math.min(Math.max(x, 202), 823);
+                z = Math.min(Math.max(z, 202), 823);
+
+                if (y < 64) {
+                    magmaImage.setWidth((256).pixels());
+                } else {
+                    magmaImage.setWidth((0).pixels());
+                }
+                icon.setX(new SubtractiveConstraint(((x - 202) * (256 / 621)).pixels(), (8).pixels()))
+                    .setY(new SubtractiveConstraint(((z - 202) * (256 / 621)).pixels(), (8).pixels()));
+            }
+        })
+        .setChildOf(textInputBlock2);
+
+    if (textInput2.getText() && !textInput2.getText().isBlank()) {
+        x = textInput2.getText().split(",")[0];
+        z = textInput2.getText().split(",")[2];
+    } else {
+        x = Math.round(coordinates.split(",")[0]);
+        z = Math.round(coordinates.split(",")[2]);
+    }
+    x = Math.min(Math.max(x, 202), 823);
+    z = Math.min(Math.max(z, 202), 823);
+    
+    const magmaImage = UIImage.Companion.ofURL(new URL("https://i.imgur.com/HafT7bu.png"))
+        .setX((0).pixels())
+        .setY((0).pixels())
+        .setWidth(((textInput2.getText() ? textInput2.getText().split(",")[1] : Player.getY()) >= 64 ? 0 : 256).pixels())
+        .setHeight(new AspectConstraint())
+        .setChildOf(image);
+
+    const icon = UIImage.Companion.ofURL(new URL("https://i.imgur.com/ePP6A2C.png"))
+        .setX(new SubtractiveConstraint(((x - 202) * (256 / 621)).pixels(), (8).pixels()))
+        .setY(new SubtractiveConstraint(((z - 202) * (256 / 621)).pixels(), (8).pixels()))
+        .setWidth((16).pixels())
+        .setHeight(new AspectConstraint())
+        .setChildOf(image);
+
+    const blockImageInvalid = new UIBlock()
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setWidth((256).pixels())
+        .setHeight(new AspectConstraint())
+        .setColor(new Color(0, 0, 0, 0))
+        .setChildOf(image);
+
+    const textImageInvalid = new UIText("INVALID COORDINATES", false)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setWidth((240).pixels())
+        .setColor(new Color(1, 0, 0, 0))
+        .setChildOf(image);
+
+    const confirmBlock = new UIRoundedRectangle(5)
+        .setX(new AdditiveConstraint(new CenterConstraint(), (4).percent()))
+        .setY((80).percent())
+        .setColor(new ConstantColorConstraint(Color.BLACK))
+        .setWidth((100).pixels())
+        .setHeight((25).pixels())
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.GREEN));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.BLACK));
+            });
+        })
+        .onMouseClick(() => {
+            if (textInput1.getText()) {
+                name = textInput1.getText();
+            }
+            if (textInput2.getText()) {
+                coordinates = textInput2.getText();
+            }
+            var server = getServerName();
+            if(textInput3.getText()) {
+                server = textInput3.getText();  
+            }
+            createServerWaypoint(server, name, coordinates, false);
+            Client.currentGui.close();
+        })
+        .setChildOf(block);
+
+    new UIText("CONFIRM", true)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setColor(new ConstantColorConstraint(Color.WHITE))
+        .setChildOf(confirmBlock);
+
+    const deleteBlock = new UIRoundedRectangle(5)
+        .setX(new AdditiveConstraint(new CenterConstraint(), (20).percent()))
+        .setY((80).percent())
+        .setColor(new ConstantColorConstraint(Color.BLACK))
+        .setWidth((100).pixels())
+        .setHeight((25).pixels())
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.RED));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.BLACK));
+            });
+        })
+        .onMouseClick(() => {
+            var server = getServerName();
+            if(textInput3.getText()) {
+                server = textInput3.getText();  
+            }
+            removeServerWaypoint(server, name);
+            Client.currentGui.close();
+        })
+        .setChildOf(block);
+
+    new UIText("DELETE", true)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setColor(new ConstantColorConstraint(Color.WHITE))
+        .setChildOf(deleteBlock);
+
+/*
+    const block = new UIRoundedRectangle(5)
+        .setColor(new Color(0 / 255, 0 / 255, 0 / 255, 150 / 255))
+        .setX(new CenterConstraint())
+        .setY((15).pixels())
+        .setWidth(new SubtractiveConstraint(new FillConstraint(), (275).pixels()))
+        .setHeight(new SubtractiveConstraint(new FillConstraint(), (30).percent()))
+        .setChildOf(window);
+
+    const text1 = new UIText("Waypoint Name", true)
+        .setX(new CenterConstraint())
+        .setY((50).pixels())
+        .setTextScale((2).pixels())
+        .setChildOf(block);
+
+    const textInputBlock1 = new UIRoundedRectangle(5)
+        .setColor(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255))
+        .setX(new CenterConstraint())
+        .setY(new AdditiveConstraint(new SiblingConstraint(), (10).pixels()))
+        .setWidth((300).pixels())
+        .setHeight((18).pixels())
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.2, new ConstantColorConstraint(new Color(20 / 255, 20 / 255, 20 / 255, 255 / 255)));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.IN_EXP, 0.2, new ConstantColorConstraint(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255)));
+            });
+        })
+        .onMouseClick(() => {
+            textInput1.grabWindowFocus();
+        })
+        .setChildOf(block);
+
+    const textInput1 = new UITextInput(name)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setWidth((250).pixels())
+        .setChildOf(textInputBlock1);
+
+    const text2 = new UIText("Coordinates (x,y,z)", true)
+        .setX(new CenterConstraint())
+        .setY(new AdditiveConstraint(new SiblingConstraint(), (50).pixels()))
+        .setTextScale((2).pixels())
+        .setChildOf(block);
+
+    const textInputBlock2 = new UIRoundedRectangle(5)
+        .setColor(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255))
+        .setX(new CenterConstraint())
+        .setY(new AdditiveConstraint(new SiblingConstraint(), (10).pixels()))
+        .setWidth((300).pixels())
+        .setHeight((18).pixels())
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.2, new ConstantColorConstraint(new Color(20 / 255, 20 / 255, 20 / 255, 255 / 255)));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.IN_EXP, 0.2, new ConstantColorConstraint(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255)));
+            });
+        })
+        .onMouseClick(() => {
+            textInput2.grabWindowFocus();
+        })
+        .setChildOf(block);
+
+    const textInput2 = new UITextInput(coordinates)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setWidth((250).pixels())
+        .onKeyType(() => {
+            var inputCoords = textInput2.getText();
+            if (textInput2.getText().trim().length === 0) {
+                inputCoords = coordinates;
+            }
+            if (!/[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}(?=\s|$)/g.exec(inputCoords)) {
+                textImageInvalid.setColor(new Color(1, 0, 0, 1));
+                blockImageInvalid.setColor(new Color(0, 0, 0, 0.66));
+                icon.setWidth((0).pixels());
+            } else {
+                textImageInvalid.setColor(new Color(1, 0, 0, 0));
+                blockImageInvalid.setColor(new Color(0, 0, 0, 0));
+                icon.setWidth((16).pixels());
+                var x = inputCoords.split(",")[0];
+                var y = inputCoords.split(",")[1];
+                var z = inputCoords.split(",")[2];
+                x = Math.min(Math.max(x, 202), 823);
+                z = Math.min(Math.max(z, 202), 823);
+
+                if (y < 64) {
+                    magmaImage.setWidth((128).pixels());
+                } else {
+                    magmaImage.setWidth((0).pixels());
+                }
+                icon.setX(new SubtractiveConstraint(((x - 202) * (128 / 621)).pixels(), (8).pixels()))
+                    .setY(new SubtractiveConstraint(((z - 202) * (128 / 621)).pixels(), (8).pixels()));
+            }
+        })
+        .setChildOf(textInputBlock2);
+
+    const confirmBlock = new UIRoundedRectangle(5)
+        .setColor(new ConstantColorConstraint(Color.BLACK))
+        .setX(new CenterConstraint())
+        .setY((4).pixels(true))
+        .setColor(new ConstantColorConstraint(Color.BLACK))
+        .setWidth((75).pixels())
+        .setHeight((25).pixels())
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.GREEN));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.BLACK));
+            });
+        })
+        .onMouseClick(() => {
+            if (textInput1.getText()) {
+                name = textInput1.getText();
+            }
+            if (textInput2.getText()) {
+                coordinates = textInput2.getText();
+            }
+            createWaypoint(name, coordinates, false);
+            Client.currentGui.close();
+        })
+        .setChildOf(block);
+
+    new UIText("CONFIRM", true)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setColor(new ConstantColorConstraint(Color.WHITE))
+        .setChildOf(confirmBlock);
+
+    const image = UIImage.Companion.ofURL(new URL("https://i.imgur.com/44O0mF6.png"))
+        .setX(new CenterConstraint())
+        .setY(new AdditiveConstraint(new SiblingConstraint(), (15).percent()))
+        .setWidth((128).pixels())
+        .setHeight(new AspectConstraint())
+        .setChildOf(window);
+
+    const magmaImage = UIImage.Companion.ofURL(new URL("https://i.imgur.com/QhPuKCm.png"))
+        .setX((0).pixels())
+        .setY((0).pixels())
+        .setWidth(((textInput2.getText() ? textInput2.getText().split(",")[1] : Player.getY()) >= 64 ? 0 : 128).pixels())
+        .setHeight(new AspectConstraint())
+        .setChildOf(image);
+
+    if (textInput2.getText() && !textInput2.getText().isBlank()) {
+        x = textInput2.getText().split(",")[0];
+        z = textInput2.getText().split(",")[2];
+    } else {
+        x = Math.round(coordinates.split(",")[0]);
+        z = Math.round(coordinates.split(",")[2]);
+    }
+    x = Math.min(Math.max(x, 202), 823);
+    z = Math.min(Math.max(z, 202), 823);
+
+    const icon = UIImage.Companion.ofURL(new URL("https://i.imgur.com/ePP6A2C.png"))
+        .setX(new SubtractiveConstraint(((x - 202) * (128 / 621)).pixels(), (8).pixels()))
+        .setY(new SubtractiveConstraint(((z - 202) * (128 / 621)).pixels(), (8).pixels()))
+        .setWidth((16).pixels())
+        .setHeight(new AspectConstraint())
+        .setChildOf(image);
+
+    const blockImageInvalid = new UIBlock()
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setWidth((128).pixels())
+        .setHeight(new AspectConstraint())
+        .setColor(new Color(0, 0, 0, 0))
+        .setChildOf(image);
+
+    const textImageInvalid = new UIText("INVALID COORDINATES", false)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setWidth((120).pixels())
+        .setColor(new Color(1, 0, 0, 0))
+        .setChildOf(image);
+*/
+    const gui = new JavaAdapter(WindowScreen, {
+        init() {
+            window.setChildOf(this.getWindow());
+        }
+    });
+    gui.init();
+    GuiHandler.openGui(gui);
+}

@@ -12,7 +12,7 @@ import { @Vigilant, @SwitchProperty, @DecimalSliderProperty, @SelectorProperty, 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
     getSubcategoryComparator: () => (a, b) => {
-        const subcategories = ["Icons", "Customize Icons"];
+     const subcategories = [];
 
         return subcategories.indexOf(a.getValue()[0].attributesExt.subcategory) -
             subcategories.indexOf(b.getValue()[0].attributesExt.subcategory);
@@ -20,11 +20,12 @@ import { @Vigilant, @SwitchProperty, @DecimalSliderProperty, @SelectorProperty, 
 })
 class Settings {
     @CheckboxProperty({
-        name: "First Join",
+        name: "Latest Version",
         category: "General",
         hidden: true
     })
-    firstJoin = true;
+    latestVersion = "";
+
     // HIDDEN
     @DecimalSliderProperty({
         name: "X Location",
@@ -75,12 +76,39 @@ class Settings {
         ChatLib.command("crystalmap gui", true)
     }
 
+    @ButtonProperty({
+        name: "Create a Waypoint",
+        description: "Opens a menu for creating waypoints.",
+        category: "Map",
+        subcategory: "Display",
+        placeholder: "Open...",
+    })
+    createWaypointGui() {
+        Client.currentGui.close()
+        ChatLib.command("crystalmap waypoint", true)
+    }
+
+    @SwitchProperty({
+        name: "Beacon Waypoints",
+        description: "Toggles the world's beacon waypoints.",
+        category: "Waypoints",
+        subcategory: "Beacons"
+    })
+    waypoint = true;
+
+    @ColorProperty({
+        name: "Waypoint Beacon Color",
+        description: "Automatically centers icons in the middle of the area's box.",
+        category: "Waypoints",
+        subcategory: "Beacons"
+    })
+    waypointColor = new Color(99 / 255, 66 / 255, 245 / 255, 1.0);
 
     @SwitchProperty({
         name: "Automatically Create Waypoints",
         description: "Automatically generates a waypoint when first entering a named location.",
         category: "Waypoints",
-        subcategory: "General"
+        subcategory: "Waypoint Creation"
     })
     createWaypoints = true;
 
@@ -88,7 +116,7 @@ class Settings {
         name: "Show Waypoints from Chat",
         description: "Automatically highlights waypoints in chat. Click it to create a waypoint.",
         category: "Waypoints",
-        subcategory: "General"
+        subcategory: "Waypoint Creation"
     })
     showChatWaypoints = true;
 
@@ -97,7 +125,7 @@ class Settings {
         name: "Automatically Parse Waypoints from Chat",
         description: "Automatically parses waypoints sent in chat.\n&cOnly parses waypoints with a given description. (eg: \"king 512 64 512\")",
         category: "Waypoints",
-        subcategory: "General"
+        subcategory: "Waypoint Creation"
     })
     parseChatWaypoints = true;
 
@@ -105,13 +133,21 @@ class Settings {
         name: "Show Waypoint's Area",
         description: "Creates a box that automatically expands to the area's size while you move around.",
         category: "Waypoints",
-        subcategory: "General"
+        subcategory: "Waypoint Creation"
     })
     showArea = true;
 
     @SwitchProperty({
+        name: "Center Icon With Area's Box",
+        description: "Automatically centers icons in the middle of the area's box.",
+        category: "Waypoints",
+        subcategory: "Waypoint Creation"
+    })
+    centerWaypointArea = true;
+
+    @SwitchProperty({
         name: "Player Icon",
-        description: "Toggles the icon at the player's location. ",
+        description: "Toggles the icon at the player's location.",
         category: "Icons",
         subcategory: "Player"
     })
@@ -272,29 +308,29 @@ class Settings {
     areaGrottoColor = new Color(234 / 255, 74 / 255, 223 / 255, 1.0);
 
     @SwitchProperty({
-        name: "Goblin King Icon",
-        description: "Shows the icon for Goblin King waypoints.",
+        name: "King Yolkar Icon",
+        description: "Shows the icon for King Yolkar waypoints.",
         category: "Icons",
-        subcategory: "Goblin King"
+        subcategory: "King Yolkar"
     })
     iconKingVisible = true;
 
-    // REQUIRES "Goblin King Icon"
+    // REQUIRES "King Yolkar Icon"
     @SelectorProperty({
-        name: "Goblin King Icon Type",
-        description: "Changes the design of Goblin King icons.",
+        name: "King Yolkar Icon Type",
+        description: "Changes the design of King Yolkar icons.",
         category: "Icons",
-        subcategory: "Goblin King",
+        subcategory: "King Yolkar",
         options: ["Vanilla", "FurfSky"]
     })
     iconKingType = 0;
 
-    // REQUIRES "Goblin King Icon"
+    // REQUIRES "King Yolkar Icon"
     @DecimalSliderProperty({
-        name: "Goblin King Icon Size",
-        description: "Changes the size of Goblin King icons.",
+        name: "King Yolkar Icon Size",
+        description: "Changes the size of King Yolkar icons.",
         category: "Icons",
-        subcategory: "Goblin King",
+        subcategory: "King Yolkar",
         minF: 0.5,
         maxF: 2.0
     })
@@ -533,6 +569,8 @@ class Settings {
 
     constructor() {
         this.initialize(this);
+        this.addDependency("Center Icon With Area's Box", "Show Waypoint's Area")
+
         this.addDependency("Player Icon Type", "Player Icon");
         this.addDependency("Player Icon Size", "Player Icon");
 
@@ -547,8 +585,8 @@ class Settings {
         this.addDependency("Show Fairy Grotto Area", "Show Waypoint's Area");
         this.addDependency("Fairy Grotto Area Color", "Show Fairy Grotto Area");
 
-        this.addDependency("Goblin King Icon Type", "Goblin King Icon");
-        this.addDependency("Goblin King Icon Size", "Goblin King Icon");
+        this.addDependency("King Yolkar Icon Type", "King Yolkar Icon");
+        this.addDependency("King Yolkar Icon Size", "King Yolkar Icon");
 
         this.addDependency("Goblin Queen's Den Icon Type", "Goblin Queen's Den Icon");
         this.addDependency("Goblin Queen's Den Icon Size", "Goblin Queen's Den Icon");
