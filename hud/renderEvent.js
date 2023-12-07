@@ -1,6 +1,14 @@
+/* 
+ * This module can be found on GitHub at https://github.com/cognitivitydev/CrystalMap/
+ * Please insult my amazing code.
+ */
+
+/// <reference types="../../CTAutocomplete" />
+/// <reference lib="es2015" />
+
 import Settings from "../config";
 import { renderIcon, renderRect } from "./renderUtils";
-import { registerServer, getArea, createRegion, getServerName, waypoints, createWaypoint, getServerRegion, getWaypoint, parseCoordinates, getServer } from "../waypoints";
+import { registerServer, getArea, createRegion, getServerName, createWaypoint, getServerRegion, getWaypoint, parseCoordinates, getServer, getWaypoints } from "../waypoints";
 
 
 const mapImage = new Image("crystalmap.png", "https://i.imgur.com/hlDUhZo.png");
@@ -91,7 +99,7 @@ export function onRender() {
         createRegion();
         var server = getServerName();
         var exists = false;
-        waypoints.forEach((server) => {
+        getWaypoints().forEach((server) => {
             if(server.server.equals(getServerName())) {
                 server.waypoints.forEach((waypoint) => {
                     if(waypoint.name.equals(area)) exists = true;

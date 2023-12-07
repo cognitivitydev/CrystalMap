@@ -1,3 +1,11 @@
+/* 
+ * This module can be found on GitHub at https://github.com/cognitivitydev/CrystalMap/
+ * Please insult my amazing code.
+ */
+
+/// <reference types="../../CTAutocomplete" />
+/// <reference lib="es2015" />
+
 import {
     UIBlock,
     FillConstraint,
@@ -16,12 +24,14 @@ import {
     WindowScreen,
     ScrollComponent,
 } from "../../Elementa";
-import { createServerWaypoint, createWaypoint, getServer, getServerName, getWaypoints, removeServerWaypoint, removeWaypoint, waypoints } from "../waypoints";
+import { createServerWaypoint, editWaypoint, getServerName, getWaypoint, getWaypoints, removeServerWaypoint } from "../waypoints";
 
 const Color = Java.type("java.awt.Color");
 const URL = Java.type("java.net.URL")
 
 export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(Player.getX()) + "," + Math.round(Player.getY()) + "," + Math.round(Player.getZ())) {
+    var waypointId = 0;
+
     const window = new UIBlock()
         .setX((0).pixels())
         .setY((0).pixels())
@@ -69,7 +79,6 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setY(new CenterConstraint())
         .setChildOf(dropBlock);
 
-//˄˅
     const dropIcon = new UIText("˅", false)
         .setX(new SubtractiveConstraint((100).percent(), (12).pixels()))
         .setY((25).percent())
@@ -97,6 +106,11 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
             textInput2.setText(coordinates);
             textInput3.setText(getServerName())
             dropName.setText("Create new waypoint...");
+            if(getWaypoint(getServerName(), "New Waypoint")) {
+                confirmText.setText("EDIT");
+            } else {
+                confirmText.setText("CONFIRM");
+            }
         })
         .setChildOf(waypoints);
     dropWaypoints.push(dropWaypoint);
@@ -110,15 +124,15 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
     getWaypoints().forEach(servers => {
         servers.waypoints.forEach(serverWaypoint => {
             waypointsArray.push(serverWaypoint);
-        })
+        });
     })
     for(var i = 0; i < waypointsArray.length; i++) {
-        var waypoint = waypointsArray[i];
+        let waypoint = waypointsArray[i];
 
-        var displayName = waypoint.name.substring(0, 35);
+        let displayName = waypoint.name.substring(0, 32);
         if(!waypoint.name.equals(displayName)) displayName = displayName + "...";
 
-        var color = new Color(28 / 255, 34 / 255, 35 / 255);
+        let color = new Color(28 / 255, 34 / 255, 35 / 255);
         if(i % 2 == 0) {
             color = new Color(31 / 255, 36 / 255, 37 / 255);
         }
@@ -133,20 +147,20 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
                 textInput1.setText(waypoint.name);
                 textInput2.setText(waypoint.location);
                 getWaypoints().forEach((server) => {
-                    var serverName = server.server;
+                    let serverName = server.server;
                     server.waypoints.forEach(serverWaypoint => {
-                        if(serverWaypoint.name.equals(waypoint.name)) {
+                        if(serverWaypoint.id == waypoint.id) {
                             textInput3.setText(serverName);
                         }
                     });
                 });
-                //textInput3.setText()
                 dropName.setText(displayName);
+                confirmText.setText("EDIT");
             })
             .setChildOf(waypoints);
         dropWaypoints.push(dropWaypoint);
 
-        dropText = new UIText(displayName, false)
+        dropText = new UIText(waypoint.id+" - "+displayName, false)
             .setX((5).percent())
             .setY(new CenterConstraint())
             .setChildOf(dropWaypoint);
@@ -207,9 +221,24 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setX(new CenterConstraint())
         .setY(new CenterConstraint())
         .setWidth((250).pixels())
+        .onKeyType(() => {
+            var inputName = textInput1.getText();
+            if (inputName.trim().length === 0) {
+                inputName = name;
+            }
+            var inputServer = textInput3.getText();
+            if (inputServer.trim().length === 0) {
+                inputServer = getServerName();
+            }
+            if(getWaypoint(inputServer, inputName)) {
+                confirmText.setText("EDIT");
+            } else {
+                confirmText.setText("CONFIRM");
+            }
+        })
         .setChildOf(textInputBlock1);
 
-    const text3 = new UIText("Server Name", true)
+    const text3 = new UIText("Server ID", true)
         .setX(new AdditiveConstraint(new CenterConstraint(), (12).percent()))
         .setY(new AdditiveConstraint(new SiblingConstraint(), (12).percent()))
         .setTextScale((2).pixels())
@@ -342,6 +371,11 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setColor(new Color(1, 0, 0, 0))
         .setChildOf(image);
 
+    const confirmText = new UIText("CONFIRM", true)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setColor(new ConstantColorConstraint(Color.WHITE));
+
     const confirmBlock = new UIRoundedRectangle(5)
         .setX(new AdditiveConstraint(new CenterConstraint(), (4).percent()))
         .setY((80).percent())
@@ -350,7 +384,11 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setHeight((25).pixels())
         .onMouseEnter((comp) => {
             animate(comp, (animation) => {
-                animation.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.GREEN));
+                if(confirmText.getText().equals("EDIT")) {
+                    animation.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(new Color(255 / 255, 255 / 255, 69 / 255, 1)));
+                } else {
+                    animation.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.GREEN));
+                }
             });
         })
         .onMouseLeave((comp) => {
@@ -369,16 +407,22 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
             if(textInput3.getText()) {
                 server = textInput3.getText();  
             }
-            createServerWaypoint(server, name, coordinates, false);
+            var foundWaypoint = getWaypoint(server, name)
+            if(foundWaypoint) {
+                var id = foundWaypoint.id;
+                editWaypoint(id, server, name, coordinates)
+            } else {
+                createServerWaypoint(server, name, coordinates, false);
+            }
             Client.currentGui.close();
         })
         .setChildOf(block);
 
-    new UIText("CONFIRM", true)
-        .setX(new CenterConstraint())
-        .setY(new CenterConstraint())
-        .setColor(new ConstantColorConstraint(Color.WHITE))
-        .setChildOf(confirmBlock);
+    confirmText.setChildOf(confirmBlock);
+    
+    if(getWaypoint(textInput3.getText().trim().length === 0 ? getServerName() : textInput3.getText(), textInput1.getText().trim().length === 0 ? name : textInput1.getText())) {
+        confirmText.setText("EDIT");
+    }
 
     const deleteBlock = new UIRoundedRectangle(5)
         .setX(new AdditiveConstraint(new CenterConstraint(), (20).percent()))
@@ -401,6 +445,9 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
             if(textInput3.getText()) {
                 server = textInput3.getText();  
             }
+            if (textInput1.getText()) {
+                name = textInput1.getText();
+            }
             removeServerWaypoint(server, name);
             Client.currentGui.close();
         })
@@ -412,190 +459,6 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setColor(new ConstantColorConstraint(Color.WHITE))
         .setChildOf(deleteBlock);
 
-/*
-    const block = new UIRoundedRectangle(5)
-        .setColor(new Color(0 / 255, 0 / 255, 0 / 255, 150 / 255))
-        .setX(new CenterConstraint())
-        .setY((15).pixels())
-        .setWidth(new SubtractiveConstraint(new FillConstraint(), (275).pixels()))
-        .setHeight(new SubtractiveConstraint(new FillConstraint(), (30).percent()))
-        .setChildOf(window);
-
-    const text1 = new UIText("Waypoint Name", true)
-        .setX(new CenterConstraint())
-        .setY((50).pixels())
-        .setTextScale((2).pixels())
-        .setChildOf(block);
-
-    const textInputBlock1 = new UIRoundedRectangle(5)
-        .setColor(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255))
-        .setX(new CenterConstraint())
-        .setY(new AdditiveConstraint(new SiblingConstraint(), (10).pixels()))
-        .setWidth((300).pixels())
-        .setHeight((18).pixels())
-        .onMouseEnter((comp) => {
-            animate(comp, (animation) => {
-                animation.setColorAnimation(Animations.OUT_EXP, 0.2, new ConstantColorConstraint(new Color(20 / 255, 20 / 255, 20 / 255, 255 / 255)));
-            });
-        })
-        .onMouseLeave((comp) => {
-            animate(comp, (anim) => {
-                anim.setColorAnimation(Animations.IN_EXP, 0.2, new ConstantColorConstraint(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255)));
-            });
-        })
-        .onMouseClick(() => {
-            textInput1.grabWindowFocus();
-        })
-        .setChildOf(block);
-
-    const textInput1 = new UITextInput(name)
-        .setX(new CenterConstraint())
-        .setY(new CenterConstraint())
-        .setWidth((250).pixels())
-        .setChildOf(textInputBlock1);
-
-    const text2 = new UIText("Coordinates (x,y,z)", true)
-        .setX(new CenterConstraint())
-        .setY(new AdditiveConstraint(new SiblingConstraint(), (50).pixels()))
-        .setTextScale((2).pixels())
-        .setChildOf(block);
-
-    const textInputBlock2 = new UIRoundedRectangle(5)
-        .setColor(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255))
-        .setX(new CenterConstraint())
-        .setY(new AdditiveConstraint(new SiblingConstraint(), (10).pixels()))
-        .setWidth((300).pixels())
-        .setHeight((18).pixels())
-        .onMouseEnter((comp) => {
-            animate(comp, (animation) => {
-                animation.setColorAnimation(Animations.OUT_EXP, 0.2, new ConstantColorConstraint(new Color(20 / 255, 20 / 255, 20 / 255, 255 / 255)));
-            });
-        })
-        .onMouseLeave((comp) => {
-            animate(comp, (anim) => {
-                anim.setColorAnimation(Animations.IN_EXP, 0.2, new ConstantColorConstraint(new Color(0 / 255, 0 / 255, 0 / 255, 255 / 255)));
-            });
-        })
-        .onMouseClick(() => {
-            textInput2.grabWindowFocus();
-        })
-        .setChildOf(block);
-
-    const textInput2 = new UITextInput(coordinates)
-        .setX(new CenterConstraint())
-        .setY(new CenterConstraint())
-        .setWidth((250).pixels())
-        .onKeyType(() => {
-            var inputCoords = textInput2.getText();
-            if (textInput2.getText().trim().length === 0) {
-                inputCoords = coordinates;
-            }
-            if (!/[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}(?=\s|$)/g.exec(inputCoords)) {
-                textImageInvalid.setColor(new Color(1, 0, 0, 1));
-                blockImageInvalid.setColor(new Color(0, 0, 0, 0.66));
-                icon.setWidth((0).pixels());
-            } else {
-                textImageInvalid.setColor(new Color(1, 0, 0, 0));
-                blockImageInvalid.setColor(new Color(0, 0, 0, 0));
-                icon.setWidth((16).pixels());
-                var x = inputCoords.split(",")[0];
-                var y = inputCoords.split(",")[1];
-                var z = inputCoords.split(",")[2];
-                x = Math.min(Math.max(x, 202), 823);
-                z = Math.min(Math.max(z, 202), 823);
-
-                if (y < 64) {
-                    magmaImage.setWidth((128).pixels());
-                } else {
-                    magmaImage.setWidth((0).pixels());
-                }
-                icon.setX(new SubtractiveConstraint(((x - 202) * (128 / 621)).pixels(), (8).pixels()))
-                    .setY(new SubtractiveConstraint(((z - 202) * (128 / 621)).pixels(), (8).pixels()));
-            }
-        })
-        .setChildOf(textInputBlock2);
-
-    const confirmBlock = new UIRoundedRectangle(5)
-        .setColor(new ConstantColorConstraint(Color.BLACK))
-        .setX(new CenterConstraint())
-        .setY((4).pixels(true))
-        .setColor(new ConstantColorConstraint(Color.BLACK))
-        .setWidth((75).pixels())
-        .setHeight((25).pixels())
-        .onMouseEnter((comp) => {
-            animate(comp, (animation) => {
-                animation.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.GREEN));
-            });
-        })
-        .onMouseLeave((comp) => {
-            animate(comp, (anim) => {
-                anim.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.BLACK));
-            });
-        })
-        .onMouseClick(() => {
-            if (textInput1.getText()) {
-                name = textInput1.getText();
-            }
-            if (textInput2.getText()) {
-                coordinates = textInput2.getText();
-            }
-            createWaypoint(name, coordinates, false);
-            Client.currentGui.close();
-        })
-        .setChildOf(block);
-
-    new UIText("CONFIRM", true)
-        .setX(new CenterConstraint())
-        .setY(new CenterConstraint())
-        .setColor(new ConstantColorConstraint(Color.WHITE))
-        .setChildOf(confirmBlock);
-
-    const image = UIImage.Companion.ofURL(new URL("https://i.imgur.com/44O0mF6.png"))
-        .setX(new CenterConstraint())
-        .setY(new AdditiveConstraint(new SiblingConstraint(), (15).percent()))
-        .setWidth((128).pixels())
-        .setHeight(new AspectConstraint())
-        .setChildOf(window);
-
-    const magmaImage = UIImage.Companion.ofURL(new URL("https://i.imgur.com/QhPuKCm.png"))
-        .setX((0).pixels())
-        .setY((0).pixels())
-        .setWidth(((textInput2.getText() ? textInput2.getText().split(",")[1] : Player.getY()) >= 64 ? 0 : 128).pixels())
-        .setHeight(new AspectConstraint())
-        .setChildOf(image);
-
-    if (textInput2.getText() && !textInput2.getText().isBlank()) {
-        x = textInput2.getText().split(",")[0];
-        z = textInput2.getText().split(",")[2];
-    } else {
-        x = Math.round(coordinates.split(",")[0]);
-        z = Math.round(coordinates.split(",")[2]);
-    }
-    x = Math.min(Math.max(x, 202), 823);
-    z = Math.min(Math.max(z, 202), 823);
-
-    const icon = UIImage.Companion.ofURL(new URL("https://i.imgur.com/ePP6A2C.png"))
-        .setX(new SubtractiveConstraint(((x - 202) * (128 / 621)).pixels(), (8).pixels()))
-        .setY(new SubtractiveConstraint(((z - 202) * (128 / 621)).pixels(), (8).pixels()))
-        .setWidth((16).pixels())
-        .setHeight(new AspectConstraint())
-        .setChildOf(image);
-
-    const blockImageInvalid = new UIBlock()
-        .setX(new CenterConstraint())
-        .setY(new CenterConstraint())
-        .setWidth((128).pixels())
-        .setHeight(new AspectConstraint())
-        .setColor(new Color(0, 0, 0, 0))
-        .setChildOf(image);
-
-    const textImageInvalid = new UIText("INVALID COORDINATES", false)
-        .setX(new CenterConstraint())
-        .setY(new CenterConstraint())
-        .setWidth((120).pixels())
-        .setColor(new Color(1, 0, 0, 0))
-        .setChildOf(image);
-*/
     const gui = new JavaAdapter(WindowScreen, {
         init() {
             window.setChildOf(this.getWindow());

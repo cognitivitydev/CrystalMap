@@ -10,12 +10,6 @@ import { @Vigilant, @SwitchProperty, @DecimalSliderProperty, @SelectorProperty, 
         const categories = ["Map", "Waypoints", "Icons"];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
-    },
-    getSubcategoryComparator: () => (a, b) => {
-     const subcategories = [];
-
-        return subcategories.indexOf(a.getValue()[0].attributesExt.subcategory) -
-            subcategories.indexOf(b.getValue()[0].attributesExt.subcategory);
     }
 })
 class Settings {

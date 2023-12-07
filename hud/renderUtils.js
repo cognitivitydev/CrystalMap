@@ -1,3 +1,11 @@
+/* 
+ * This module can be found on GitHub at https://github.com/cognitivitydev/CrystalMap/
+ * Please insult my amazing code.
+ */
+
+/// <reference types="../../CTAutocomplete" />
+/// <reference lib="es2015" />
+
 import Settings from "../config"
 
 export function renderIcon(icon, width, height, x, y, yaw, outline) {
@@ -29,14 +37,14 @@ export function renderRect(color, width, height, x, y, yaw) {
     Renderer.translate((x - 202) * (128 / 621) * Settings.scale, (y - 202) * (128 / 621) * Settings.scale);
     Renderer.translate(Settings.mapX * Renderer.screen.getWidth(), Settings.mapY * Renderer.screen.getHeight());
     Renderer.rotate(yaw);
-    Renderer.scale(Settings.scale);
+    Renderer.scale(Settings.scale); 
 
     Renderer.drawRect(color, -(width) / 2, -(height) / 2, (width), (height));
     Renderer.retainTransforms(false);
     Tessellator.popMatrix();
 }
 export function distance(location) {
-    var distance = Math.hypot(Player.getX()-location.x+0.5, Player.getY()-location.y, Player.getZ()-location.z+0.5);
+    var distance = Math.hypot(Player.getX()-location.x+0.5, Player.getZ()-location.z+0.5);
     var decimal = distance >= 100 ? 0 : distance >= 10 ? 1 : 2
     return Math.round(distance * Math.pow(10, decimal)) / Math.pow(10, decimal);
 }

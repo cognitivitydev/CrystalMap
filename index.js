@@ -7,7 +7,7 @@
 /// <reference lib="es2015" />
 
 import Settings from "./config";
-import { createWaypoint, removeWaypoint, inCrystalHollows, getServerName, getServer, getWaypoint, getCoordinates, registerServer, parseCoordinates } from "./waypoints";
+import { createWaypoint, removeWaypoint, inCrystalHollows, getServerName, getServer, getWaypoint, getCoordinates, registerServer, parseCoordinates, getWaypointFromId } from "./waypoints";
 import { onRender } from "./hud/renderEvent";
 import { openWaypointGui } from "./gui/WaypointGui";
 import { openDraggableGui } from "./gui/DraggableGui";
@@ -82,12 +82,12 @@ register("command", (...args) => {
         return;
     }
     if(args.length >= 1 && args[0].equals("remove")) {
-        if(args.length == 1) {
-            ChatLib.chat("&cNo waypoint name specified!")
-            return;
-        }
         if(!inCrystalHollows()) {
             ChatLib.chat("&cIt seems like you aren't in the Crystal Hollows!");
+            return;
+        }
+        if(args.length == 1) {
+            ChatLib.chat("&cNo waypoint name specified!")
             return;
         }
         removeWaypoint(args.slice(1).join(" "));
@@ -98,10 +98,10 @@ register("command", (...args) => {
         return;
     }
     if(args.length >= 1 && args[0].equals("waypoint")) {
-        //if(!inCrystalHollows()) {
-        //    ChatLib.chat("&cIt seems like you aren't in the Crystal Hollows!");
-        //    return;
-        //}
+        if(!inCrystalHollows()) {
+            ChatLib.chat("&cIt seems like you aren't in the Crystal Hollows!");
+            return;
+        }
         newWaypointCoordinates = undefined;
         newWaypointName = undefined;  
         if(args.length >= 2) {
@@ -130,7 +130,7 @@ register("command", (...args) => {
 register("chat", (event) => {
     var formattedMessage = ChatLib.getChatMessage(event);
     var message = ChatLib.removeFormatting(formattedMessage);
-    var content = message.replace(/^(\[[0-9]+\] )?(\S )?(\[.+\] )?[A-Za-z0-9_]{3,16}: (?!$)/g, "")
+    var content = message.replace(/^(\[[0-9]+\] )?(\S )?(\[.+\] )?[A-Za-z0-9_]{3,16}( .)?: (?!$)/g, "")
 
     if(content.equals(message)) return;
     if(Settings.showChatWaypoints) {

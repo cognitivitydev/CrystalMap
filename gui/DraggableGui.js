@@ -1,3 +1,11 @@
+/* 
+ * This module can be found on GitHub at https://github.com/cognitivitydev/CrystalMap/
+ * Please insult my amazing code.
+ */
+
+/// <reference types="../../CTAutocomplete" />
+/// <reference lib="es2015" />
+
 import {
     UIBlock,
     animate,
