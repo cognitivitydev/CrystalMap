@@ -9,7 +9,7 @@
 import Settings from "../config";
 import { renderIcon, renderRect } from "./renderUtils";
 import { registerServer, getArea, createRegion, getServerName, createWaypoint, getServerRegion, getWaypoint, parseCoordinates, getServer, getWaypoints } from "../waypoints";
-
+var apiOffline = false;
 
 const mapImage = new Image("crystalmap.png", "https://i.imgur.com/hlDUhZo.png");
 const magmaImage = new Image("crystalmap2.png", "https://i.imgur.com/HafT7bu.png");
@@ -57,8 +57,18 @@ const odawaIcon = {
     "furfsky": new Image("odawa_furf.png", "https://i.imgur.com/bWAP04K.png"),
 }
 
-
-const head = new Image("head_"+Player.getUUID()+".png", "https://crafatar.com/avatars/"+Player.getUUID()+"?overlay&size=8&default=MHF_Steve");
+// if api is down, the whole mod breaks
+var head;
+try {
+    head = new Image("head_"+Player.getUUID()+".png", "https://crafatar.com/avatars/"+Player.getUUID()+"?overlay&size=8&default=MHF_Steve");
+} catch (error) {
+    if(!apiOffline) {
+        console.warn("Crafatar seems to be offline. Switching to arrow icon...");
+        ChatLib.chat("&d[CrystalMap] &7Skull textures failed to load. Switching to arrow icon...");
+        apiOffline = true;
+        head = mapArrow;
+    }
+}
 const entrances = [
     // TOP
     {x: 211, y: 86, z: 238},
@@ -209,7 +219,8 @@ export function onRender() {
     }
   
     if(Settings.iconPlayerVisible) {
-        if(Settings.iconPlayerType == 0) {
+        let isArrow = Settings.iconPlayerType == 0 || apiOffline;
+        if(isArrow) {
             var playerIcon = mapArrow;
             var width = 5;
             var height = 7;
@@ -219,7 +230,7 @@ export function onRender() {
             var height = 8;
         }
   
-        renderIcon(playerIcon, width * Settings.iconPlayerSize, height * Settings.iconPlayerSize, Player.getX(), Player.getZ(), Player.getYaw()-180, Settings.iconPlayerType == 1);
+        renderIcon(playerIcon, width * Settings.iconPlayerSize, height * Settings.iconPlayerSize, Player.getX(), Player.getZ(), Player.getYaw()-180, !isArrow);
     }
     width = 16;
     height = 16;
