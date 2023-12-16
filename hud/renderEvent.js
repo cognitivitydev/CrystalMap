@@ -19,7 +19,7 @@ const genericIcon = {
     "vanilla": new Image("generic_waypoint.png", "https://i.imgur.com/ePP6A2C.png"),
     "furfsky": new Image("generic_waypoint_furf.png", "https://i.imgur.com/KkBwFpx.png")
 }
-const entranceIcon = new Image("entrance.png", "https://i.imgur.com/8GiZNCK.png");
+const entranceIcon = new Image("entrance.png", "https://i.imgur.com/tQ5wgV8.png");
 const grottoIcon = {
     "vanilla": new Image("fairy_grotto.png", "https://i.imgur.com/bKaR3fq.png"),
     "furfsky": new Image("fairy_grotto_furf.png", "https://i.imgur.com/IVTsnSc.png")
@@ -48,10 +48,15 @@ const balIcon = {
     "vanilla": new Image("khazad_dum.png", "https://i.imgur.com/PFAoHh1.png"),
     "furfsky": new Image("khazad_dum_furf.png", "https://i.imgur.com/8GiZNCK.png"),
 }
-const corleoneIcon = { // TODO 
+const corleoneIcon = {
     "vanilla": new Image("corleone.png", "https://i.imgur.com/iXoq0MQ.png"),
     "furfsky": new Image("corleone_furf.png", "https://i.imgur.com/MEh8dN6.png"),
 }
+const odawaIcon = {
+    "vanilla": new Image("odawa.png", "https://i.imgur.com/kdEM9gD.png"),
+    "furfsky": new Image("odawa_furf.png", "https://i.imgur.com/bWAP04K.png"),
+}
+
 
 const head = new Image("head_"+Player.getUUID()+".png", "https://crafatar.com/avatars/"+Player.getUUID()+"?overlay&size=8&default=MHF_Steve");
 const entrances = [
@@ -132,74 +137,76 @@ export function onRender() {
     }
     var server = getServerRegion()
     if(server == undefined) {
-        console.log(Scoreboard.getLines().toString());
+        console.error("Server region is undefined!");
+        console.error(Scoreboard.getLines());
+    } else {
+        server.regions.forEach((region) => {
+            if(area.equals(region.name)) {
+                if(Player.getX() < region.min.x || region.min.x == 0) {
+                    region.min.x = Player.getX();
+                } else if(Player.getX() > region.max.x) {
+                    region.max.x = Player.getX();
+                }
+        
+                if(Player.getZ() < region.min.z || region.max.x == 0) {
+                    region.min.z = Player.getZ();
+                } else if(Player.getZ() > region.max.z) {
+                    region.max.z = Player.getZ();
+                }
+            }
+            var render = false;
+            color = Renderer.color(255, 255, 255);
+            if(Settings.showArea) {
+                if(region.name.equals("Fairy Grotto")) {
+                    if(Settings.areaGrottoVisible) {
+                        settingsColor = Settings.areaGrottoColor;
+                        color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
+                        render = true;
+                    }
+                }
+                if(region.name.equals("Goblin Queen's Den")) {
+                    if(Settings.areaQueenVisible) {
+                        settingsColor = Settings.areaQueenColor;
+                        color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
+                        render = true;
+                    }
+                }
+                if(region.name.equals("Jungle Temple")) {
+                    if(Settings.areaTempleVisible) {
+                        settingsColor = Settings.areaTempleColor;
+                        color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
+                        render = true;
+                    }
+                }
+                if(region.name.equals("Khazad-dûm")) {
+                    if(Settings.areaBalVisible) {
+                        settingsColor = Settings.areaBalColor;
+                        color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
+                        render = true;
+                    }
+                }
+                if(region.name.equals("Lost Precursor City")) {
+                    if(Settings.areaCityVisible) {
+                        settingsColor = Settings.areaCityColor;
+                        color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
+                        render = true;
+                    }
+                }
+                if(region.name.equals("Mines of Divan")) {
+                    if(Settings.areaDivanVisible) {
+                        settingsColor = Settings.areaDivanColor;
+                        color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
+                        render = true;
+                    }
+                }
+                var boxWidth = (region.max.x - region.min.x)*(128/621);
+                var boxHeight = (region.max.z - region.min.z)*(128/621);
+                if(render && region.min.x != 0 && region.max.x != 0 && region.min.z != 0 && region.max.z != 0) {
+                    renderRect(color, boxWidth, boxHeight, region.min.x+boxWidth*2, region.min.z+boxHeight*2, 0);
+                }
+            }
+        });
     }
-    server.regions.forEach((region) => {
-        if(area.equals(region.name)) {
-            if(Player.getX() < region.min.x || region.min.x == 0) {
-                region.min.x = Player.getX();
-            } else if(Player.getX() > region.max.x) {
-                region.max.x = Player.getX();
-            }
-    
-            if(Player.getZ() < region.min.z || region.max.x == 0) {
-                region.min.z = Player.getZ();
-            } else if(Player.getZ() > region.max.z) {
-                region.max.z = Player.getZ();
-            }
-        }
-        var render = false;
-        color = Renderer.color(255, 255, 255);
-        if(Settings.showArea) {
-            if(region.name.equals("Fairy Grotto")) {
-                if(Settings.areaGrottoVisible) {
-                    settingsColor = Settings.areaGrottoColor;
-                    color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
-                    render = true;
-                }
-            }
-            if(region.name.equals("Goblin Queen's Den")) {
-                if(Settings.areaQueenVisible) {
-                    settingsColor = Settings.areaQueenColor;
-                    color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
-                    render = true;
-                }
-            }
-            if(region.name.equals("Jungle Temple")) {
-                if(Settings.areaTempleVisible) {
-                    settingsColor = Settings.areaTempleColor;
-                    color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
-                    render = true;
-                }
-            }
-            if(region.name.equals("Khazad-dûm")) {
-                if(Settings.areaBalVisible) {
-                    settingsColor = Settings.areaBalColor;
-                    color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
-                    render = true;
-                }
-            }
-            if(region.name.equals("Lost Precursor City")) {
-                if(Settings.areaCityVisible) {
-                    settingsColor = Settings.areaCityColor;
-                    color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
-                    render = true;
-                }
-            }
-            if(region.name.equals("Mines of Divan")) {
-                if(Settings.areaDivanVisible) {
-                    settingsColor = Settings.areaDivanColor;
-                    color = Renderer.color(settingsColor.getRed(), settingsColor.getGreen(), settingsColor.getBlue());
-                    render = true;
-                }
-            }
-            var boxWidth = (region.max.x - region.min.x)*(128/621);
-            var boxHeight = (region.max.z - region.min.z)*(128/621);
-            if(render && region.min.x != 0 && region.max.x != 0 && region.min.z != 0 && region.max.z != 0) {
-                renderRect(color, boxWidth, boxHeight, region.min.x+boxWidth*2, region.min.z+boxHeight*2, 0);
-            }
-        }
-    });
   
     if(Settings.iconPlayerVisible) {
         if(Settings.iconPlayerType == 0) {
@@ -216,21 +223,22 @@ export function onRender() {
     }
     width = 16;
     height = 16;
-    var server = getServerName()
+    var server = getServerName();
     renderWaypoint(corleoneIcon, Settings.iconCorleoneVisible, Settings.iconCorleoneType, Settings.iconCorleoneSize, "Boss Corleone", "corleone");
     renderWaypoint(grottoIcon, Settings.iconGrottoVisible, Settings.iconGrottoType, Settings.iconGrottoSize, "Fairy Grotto", "grotto");
     renderWaypoint(kingIcon, Settings.iconKingVisible, Settings.iconKingType, Settings.iconKingSize, "King Yolkar", "king");
     renderWaypoint(queenIcon, Settings.iconQueenVisible, Settings.iconQueenType, Settings.iconQueenSize, "Goblin Queen's Den", "queen");
     renderWaypoint(templeIcon, Settings.iconTempleVisible, Settings.iconTempleType, Settings.iconTempleSize, "Jungle Temple", "temple");
+    renderWaypoint(odawaIcon, Settings.iconOdawaVisible, Settings.iconOdawaType, Settings.iconOdawaSize, "Odawa");
     renderWaypoint(balIcon, Settings.iconBalVisible, Settings.iconBalType, Settings.iconBalSize, "Khazad-dûm", "Khazad-dum", "bal");
     renderWaypoint(cityIcon, Settings.iconCityVisible, Settings.iconCityType, Settings.iconCitySize, "Lost Precursor City", "city");
     renderWaypoint(divanIcon, Settings.iconDivanVisible, Settings.iconDivanType, Settings.iconDivanSize, "Mines of Divan", "divan");
     if(Settings.iconGenericVisible) {
-        server = getServer(getServerName())
+        server = getServer(getServerName());
         if(server == undefined) return;
         var waypointList = server.waypoints;
         waypointList.forEach((waypoint) => {
-            if(/(corleone|(Fairy )?Grotto|King( Yolkar)?|Goblin Queen's Den|queen|(Jungle )?Temple|Khazad-d[ûu]m|bal|(Lost Precursor )?City|(Mines of )?Divan)/gi.exec(waypoint.name)) return;
+            if(/(corleone|(Fairy )?Grotto|King( Yolkar)?|Goblin Queen's Den|queen|(Jungle )?Temple|Khazad-d[ûu]m|bal|(Lost Precursor )?City|(Mines of )?Divan|Odawa)/gi.exec(waypoint.name)) return;
             coords = parseCoordinates(waypoint.location);
             renderIcon(Settings.iconGenericType == 0 ? genericIcon.vanilla : genericIcon.furfsky, width * Settings.iconGenericSize, height * Settings.iconGenericSize, coords.x, coords.z, 0, false);
         });

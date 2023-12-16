@@ -30,8 +30,6 @@ const Color = Java.type("java.awt.Color");
 const URL = Java.type("java.net.URL")
 
 export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(Player.getX()) + "," + Math.round(Player.getY()) + "," + Math.round(Player.getZ())) {
-    var waypointId = 0;
-
     const window = new UIBlock()
         .setX((0).pixels())
         .setY((0).pixels())
@@ -47,6 +45,37 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setHeight(new SubtractiveConstraint(new FillConstraint(), (30).pixels()))
         .setChildOf(window);
 
+    const routeBlock = new UIBlock()
+        .setX(new AdditiveConstraint((5).percent(), (2).pixels()))
+        .setY((20).percent())
+        .setWidth((252).pixels())
+        .setHeight((20).pixels())
+        .setColor(new Color(21 / 255, 24 / 255, 28 / 255, 1))
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.2, new ConstantColorConstraint(new Color(17 / 255, 19 / 255, 22 / 255, 1)));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.IN_EXP, 0.2, new ConstantColorConstraint(new Color(21 / 255, 24 / 255, 28 / 255, 1)));
+            });
+        })
+        .onMouseClick(() => {
+            ChatLib.command("crystalmap route", true)
+        })
+        .setChildOf(block);
+
+    const routeName = new UIText("Generate gemstone route...", false)
+        .setX((5).percent())
+        .setY(new CenterConstraint())
+        .setChildOf(routeBlock);
+
+    const routeIcon = new UIText("˃", false)
+        .setX(new SubtractiveConstraint((100).percent(), (12).pixels()))
+        .setY((20).percent())
+        .setWidth((6).pixels())
+        .setChildOf(routeBlock);
 
     const image = UIImage.Companion.ofURL(new URL("https://i.imgur.com/hlDUhZo.png"))
         .setX((5).percent())
@@ -380,7 +409,7 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setX(new AdditiveConstraint(new CenterConstraint(), (4).percent()))
         .setY((80).percent())
         .setColor(new ConstantColorConstraint(Color.BLACK))
-        .setWidth((100).pixels())
+        .setWidth((125).pixels())
         .setHeight((25).pixels())
         .onMouseEnter((comp) => {
             animate(comp, (animation) => {
@@ -414,7 +443,7 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
             } else {
                 createServerWaypoint(server, name, coordinates, false);
             }
-            Client.currentGui.close();
+            ChatLib.command("crystalmap waypoint", true)
         })
         .setChildOf(block);
 
@@ -428,7 +457,7 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setX(new AdditiveConstraint(new CenterConstraint(), (20).percent()))
         .setY((80).percent())
         .setColor(new ConstantColorConstraint(Color.BLACK))
-        .setWidth((100).pixels())
+        .setWidth((125).pixels())
         .setHeight((25).pixels())
         .onMouseEnter((comp) => {
             animate(comp, (animation) => {
@@ -449,7 +478,7 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
                 name = textInput1.getText();
             }
             removeServerWaypoint(server, name);
-            Client.currentGui.close();
+            ChatLib.command("crystalmap waypoint", true)
         })
         .setChildOf(block);
 
@@ -458,6 +487,51 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setY(new CenterConstraint())
         .setColor(new ConstantColorConstraint(Color.WHITE))
         .setChildOf(deleteBlock);
+
+    const shareBlock = new UIRoundedRectangle(5)
+        .setX(new AdditiveConstraint(new CenterConstraint(), (12).percent()))
+        .setY(new AdditiveConstraint((80).percent(), (35).pixels()))
+        .setColor(new ConstantColorConstraint(Color.BLACK))
+        .setWidth((275).pixels())
+        .setHeight((25).pixels())
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                if(confirmText.getText().equals("EDIT")) {
+                    animation.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.CYAN));
+                } else {
+                    animation.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(new Color(25 / 255, 25 / 255, 25 / 255)));
+                }
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.OUT_EXP, 0.5, new ConstantColorConstraint(Color.BLACK));
+            });
+        })
+        .onMouseClick(() => {
+            if(confirmText.getText().equals("EDIT")) {
+                if (textInput1.getText()) {
+                    name = textInput1.getText();
+                }
+                if (textInput2.getText()) {
+                    coordinates = textInput2.getText();
+                }
+                var server = getServerName();
+                if(textInput3.getText()) {
+                    server = textInput3.getText();  
+                }
+                var foundWaypoint = getWaypoint(server, name);
+                if(!foundWaypoint) return;
+                ChatLib.command("crystalmap share "+foundWaypoint.id, true)
+            }
+        })
+        .setChildOf(block);
+
+    new UIText("SHARE", true)
+        .setX(new CenterConstraint())
+        .setY(new CenterConstraint())
+        .setColor(new ConstantColorConstraint(Color.WHITE))
+        .setChildOf(shareBlock);
 
     const gui = new JavaAdapter(WindowScreen, {
         init() {

@@ -3,6 +3,9 @@
  * Please insult my amazing code.
  */
 
+/// <reference types="../CTAutocomplete" />
+/// <reference lib="es2015" />
+
 import { @Vigilant, @SwitchProperty, @DecimalSliderProperty, @SelectorProperty, @PercentSliderProperty, @ButtonProperty, @SliderProperty, @CheckboxProperty, @ColorProperty, Color } from "../Vigilance";
 
 @Vigilant("CrystalMap", "Settings", {
@@ -107,6 +110,22 @@ class Settings {
     createWaypoints = true;
 
     @SwitchProperty({
+        name: "Automatically Create King Yolkar Waypoint",
+        description: "Creates a waypoint when you are near King Yolkar.",
+        category: "Waypoints",
+        subcategory: "Waypoint Creation"
+    })
+    createKingWaypoint = true;
+
+    @SwitchProperty({
+        name: "Automatically Create Odawa Waypoint",
+        description: "Creates a waypoint when you are near Odawa.",
+        category: "Waypoints",
+        subcategory: "Waypoint Creation"
+    })
+    createOdawaWaypoint = true;
+
+    @SwitchProperty({
         name: "Show Waypoints from Chat",
         description: "Automatically highlights waypoints in chat. Click it to create a waypoint.",
         category: "Waypoints",
@@ -138,6 +157,41 @@ class Settings {
         subcategory: "Waypoint Creation"
     })
     centerWaypointArea = true;
+
+    @SwitchProperty({
+        name: "Show Coordinate Requests",
+        description: "Automatically highlights people asking for waypoints in chat. Click to share it.",
+        category: "Waypoints",
+        subcategory: "Waypoint Requests"
+    })
+    showCoordinateRequests = true;
+
+    // REQUIRES "Show Coordinate Requests"
+    @CheckboxProperty({
+        name: "Show Requests in All Chat",
+        description: "Highlight requests sent in all chat.",
+        category: "Waypoints",
+        subcategory: "Waypoint Requests"
+    })
+    showAllRequests = true;
+
+    // REQUIRES "Show Coordinate Requests"
+    @CheckboxProperty({
+        name: "Show Requests in Party Chat",
+        description: "Highlight requests sent in party chat. Sharing sends the message in party chat.",
+        category: "Waypoints",
+        subcategory: "Waypoint Requests"
+    })
+    showPartyRequests = true;
+
+    // REQUIRES "Show Coordinate Requests"
+    @CheckboxProperty({
+        name: "Show Requests in Co-op Chat",
+        description: "Highlight requests sent in party chat. Sharing sends the message in co-op chat.",
+        category: "Waypoints",
+        subcategory: "Waypoint Requests"
+    })
+    showCoopRequests = true;
 
     @SwitchProperty({
         name: "Player Icon",
@@ -211,7 +265,7 @@ class Settings {
         description: "Changes the design of entrance icons.",
         category: "Icons",
         subcategory: "Entrance",
-        options: ["Vanilla"]
+        options: ["FurfSky"]
     })
     iconEntranceType = 0;
 
@@ -560,10 +614,48 @@ class Settings {
     })
     areaDivanColor = new Color(24 / 255, 108 / 255, 20 / 255, 1.0);
 
+    @SwitchProperty({
+        name: "Odawa Icon",
+        description: "Shows the icon for Odawa waypoints.",
+        category: "Icons",
+        subcategory: "Odawa"
+    })
+    iconOdawaVisible = true;
+
+    // REQUIRES "Odawa Icon"
+    @SelectorProperty({
+        name: "Odawa Icon Type",
+        description: "Changes the design of Odawa icons.",
+        category: "Icons",
+        subcategory: "Odawa",
+        options: ["Vanilla", "FurfSky"]
+    })
+    iconOdawaType = 0;
+
+    // REQUIRES "Odawa Icon"
+    @DecimalSliderProperty({
+        name: "Odawa Icon Size",
+        description: "Changes the size of Odawa icons.",
+        category: "Icons",
+        subcategory: "Odawa",
+        minF: 0.5,
+        maxF: 2.0
+    })
+    iconOdawaSize = 1.0;
 
     constructor() {
         this.initialize(this);
+
+        this.addDependency("Automatically Parse Waypoints from Chat", "Show Waypoints from Chat")
+
+        this.addDependency("Show Requests in All Chat", "Show Coordinate Requests")
+        this.addDependency("Show Requests in Party Chat", "Show Coordinate Requests")
+        this.addDependency("Show Requests in Co-op Chat", "Show Coordinate Requests")
+
         this.addDependency("Center Icon With Area's Box", "Show Waypoint's Area")
+
+        this.addDependency("Automatically Create King Yolkar Waypoint", "Automatically Create Waypoints")
+        this.addDependency("Automatically Create Odawa Waypoint", "Automatically Create Waypoints")
 
         this.addDependency("Player Icon Type", "Player Icon");
         this.addDependency("Player Icon Size", "Player Icon");
@@ -607,6 +699,9 @@ class Settings {
         this.addDependency("Mines of Divan Icon Size", "Mines of Divan Icon");
         this.addDependency("Show Mines of Divan Area", "Show Waypoint's Area");
         this.addDependency("Mines of Divan Area Color", "Show Mines of Divan Area");
+
+        this.addDependency("Odawa Icon Type", "Odawa Icon");
+        this.addDependency("Odawa Icon Size", "Odawa Icon");
 
         this.setCategoryDescription("Icons", "&c&lDISCLAIMER\n\n&7Icons using the \"FurfSky\" type are from the &5FurfSky Reborn &7texture pack.\n&7Their discord and the download to the texture pack can be found at &9&ndiscord.gg/fsr&7.\n\n\n\nUsing a scale other than 0.5, 1.0, or 2.0 may cause the icon to appear distorted.");
     }

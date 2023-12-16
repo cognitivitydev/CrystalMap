@@ -57,6 +57,7 @@ export function getAreaRegion() {
 }
 export function createRegion() {
     if(getAreaRegion() != undefined) return;
+    registerServer();
     getServerRegion().regions.push({name: getArea(), min: {x: 0, y: 0, z: 0}, max: {x: 0, y: 0, z: 0}})
 }
 export function createWaypoint(name, location, automatic) {
@@ -88,6 +89,9 @@ export function createServerWaypoint(server, name, location, automatic) {
         if(/(Mines of )?Divan/gi.exec(name) && getWaypoint(server, "Mines of Divan", "divan")) {
             return;
         }
+        if(/(Jungle )?Temple/gi.exec(name) && getWaypoint(server, "Jungle Temple", "temple")) {
+            return;
+        }
     }
     currentId++;
     serverList.waypoints.push({id: currentId, name: name, location: location});
@@ -102,7 +106,15 @@ export function createServerWaypoint(server, name, location, automatic) {
     } else {
         ChatLib.chat(ChatLib.getCenteredText("&aRegistered waypoint &5" + name + "&a at &d" + location + "&a in &e"+server+"&a."));
     }
-    ChatLib.chat(new Message(new TextComponent(ChatLib.getCenteredText("&8&oClick here to remove this waypoint.")).setClick("run_command", "/crystalmap remove "+name)));
+    ChatLib.chat(new Message(
+        "                   ",
+        new TextComponent("&e&lEDIT").setClick("run_command", "/crystalmap waypoint "+name),
+        "                   ",
+        new TextComponent("&c&lDELETE").setClick("run_command", "/crystalmap remove "+name),
+        "                 ",
+        new TextComponent("&b&lSHARE").setClick("run_command", "/crystalmap share "+currentId),
+        "                   "
+    ))
 }
 export function editWaypoint(id, newServer, newName, newCoordinates) {
     var oldWaypoint;
@@ -249,13 +261,19 @@ export function inCrystalHollows() {
         "|(Fairy Grotto)|(Jungle Temple)|(Mines of Divan)|(Lost Precursor City)|(Goblin Queen's Den)|(Khazad-dûm)|(Crystal Nucleus)$").exec(getArea())
 }
 export function parseCoordinates(coordinates) {
-    array = coordinates.split(",");
+    let array = coordinates.split(",");
     var x = array[0];
     var y = array[1];
     var z = array[2];
     return {x: x, y: y, z: z};
 }
 export function getCoordinates(entity) {
+    if(!entity) {
+        var x = Math.round(Player.getX());
+        var y = Math.round(Player.getY());
+        var z = Math.round(Player.getZ());
+        return x+","+y+","+z;      
+    }
     var x = Math.round(entity.getX());
     var y = Math.round(entity.getY());
     var z = Math.round(entity.getZ());
