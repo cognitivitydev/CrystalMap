@@ -110,6 +110,22 @@ class Settings {
     createWaypoints = true;
 
     @SwitchProperty({
+        name: "Automatically Create Fairy Grotto Waypoint",
+        description: "Creates a waypoint when you are near a butterfly.\n&eThe detection distance for this feature is limited.",
+        category: "Waypoints",
+        subcategory: "Waypoint Creation"
+    })
+    createButterflyWaypoint = true;
+
+    @SwitchProperty({
+        name: "Automatically Create Boss Corleone Waypoint",
+        description: "Creates a waypoint when you are near Boss Corleone.",
+        category: "Waypoints",
+        subcategory: "Waypoint Creation"
+    })
+    createCorleoneWaypoint = true;
+
+    @SwitchProperty({
         name: "Automatically Create King Yolkar Waypoint",
         description: "Creates a waypoint when you are near King Yolkar.",
         category: "Waypoints",

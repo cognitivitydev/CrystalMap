@@ -77,14 +77,20 @@ register("renderWorld", () => {
 register("step", () => {
     if(!Settings.createWaypoints) return;
     World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).forEach(entity => {
+        let coordinates = getCoordinates(entity);
+        if(ChatLib.removeFormatting(entity.getName()).startsWith("[Lv100] Butterfly") && !getWaypoint(getServerName(), "Fairy Grotto", "grotto")) {
+            if(distance(parseCoordinates(coordinates)) < 8) {
+                if(Settings.createButterflyWaypoint) createWaypoint("Fairy Grotto", coordinates, true);
+            }
+        }
+        if(ChatLib.removeFormatting(entity.getName()).startsWith("[Lv200] Boss Corleone") && !getWaypoint(getServerName(), "Boss Corleone", "corleone")) {
+            if(Settings.createCorleoneWaypoint) createWaypoint("Boss Corleone", coordinates, true);
+        }
         if(entity.getName().equals("§6King Yolkar") && !getWaypoint(getServerName(), "King Yolkar", "king")) {
-            if(Settings.createKingWaypoint) createWaypoint("King Yolkar", getCoordinates(entity), true);
+            if(Settings.createKingWaypoint) createWaypoint("King Yolkar", coordinates, true);
         }
         if(entity.getName().equals("Odawa") && !getWaypoint(getServerName(), "Odawa")) {
-            if(Settings.createOdawaWaypoint) createWaypoint("Odawa", getCoordinates(entity), true);
-        }
-        if(ChatLib.removeFormatting(entity.getName()).startsWith("[Lv100] Butterfly") && !getWaypoint(getServerName(), "Fairy Grotto")) {
-            createWaypoint("Fairy Grotto", getCoordinates(entity), true);
+            if(Settings.createOdawaWaypoint) createWaypoint("Odawa", coordinates, true);
         }
     });
 }).setFps(2);

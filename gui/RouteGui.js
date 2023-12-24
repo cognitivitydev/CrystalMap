@@ -29,7 +29,6 @@ import { sort, findPath } from "../pathfinder";
 import { getCoordinates, parseCoordinates } from "../waypoints";
 
 const Color = Java.type("java.awt.Color");
-const URL = Java.type("java.net.URL")
 
 var gemstones = undefined;
 export var path = [];
