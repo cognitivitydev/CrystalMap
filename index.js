@@ -7,7 +7,7 @@
 /// <reference lib="es2015" />
 
 import Settings from "./config";
-import { createWaypoint, removeWaypoint, inCrystalHollows, getServerName, getServer, getWaypoint, getCoordinates, registerServer, parseCoordinates, getWaypointFromId } from "./waypoints";
+import { createWaypoint, removeWaypoint, inCrystalHollows, getServerName, getServer, getWaypoint, getCoordinates, registerServer, parseCoordinates, getWaypointFromId, getArea, shareWaypoints } from "./waypoints";
 import RenderLibV2 from "../RenderLibV2"
 import { onRender } from "./hud/renderEvent";
 import { openWaypointGui } from "./gui/WaypointGui";
@@ -42,13 +42,15 @@ register("renderWorld", () => {
         index = parseInt(index);
         var point = path[index];
 
-        var nextPoint = index == path.length - 1 ? path[0] : path[index+1]
-        RenderLibV2.drawLine(
-            point.x+0.5, point.y+0.5, point.z+0.5,
-            nextPoint.x+0.5, nextPoint.y+0.5, nextPoint.z+0.5,
-            0, 0.5, 1, 1,
-            true, 3
-        );
+        if(Settings.showRouteLines) {
+            var nextPoint = index == path.length - 1 ? path[0] : path[index+1]
+            RenderLibV2.drawLine(
+                point.x+0.5, point.y+0.5, point.z+0.5,
+                nextPoint.x+0.5, nextPoint.y+0.5, nextPoint.z+0.5,
+                0, 0.5, 1, 1,
+                true, 3
+            );
+        }
         if(index == 0) {
             RenderLibV2.drawEspBox(point.x+0.5, point.y, point.z+0.5, 1, 1, 0.08, 1, 0.08, 1, true)
             Tessellator.drawString("§a("+(index+1)+")", point.x+0.5, point.y-0.5, point.z+0.5, 0xFFFFFF, true, 0.75, true)
@@ -81,6 +83,9 @@ register("step", () => {
         if(entity.getName().equals("Odawa") && !getWaypoint(getServerName(), "Odawa")) {
             if(Settings.createOdawaWaypoint) createWaypoint("Odawa", getCoordinates(entity), true);
         }
+        if(ChatLib.removeFormatting(entity.getName()).startsWith("[Lv100] Butterfly") && !getWaypoint(getServerName(), "Fairy Grotto")) {
+            createWaypoint("Fairy Grotto", getCoordinates(entity), true);
+        }
     });
 }).setFps(2);
 
@@ -88,7 +93,7 @@ register("renderOverlay", () => {
     if(Player.getX() <= 202 || Player.getX() >= 824) return;
     if(Player.getX() <= 30 || Player.getY() >= 188) return;
     if(Player.getZ() <= 202 || Player.getZ() >= 824) return;
-    if(!inCrystalHollows()) return;
+    if(!inCrystalHollows() || !getServerName().startsWith("m")) return;
     onRender();
 })
 
@@ -168,9 +173,10 @@ register("chat", (event) => {
 
     if(content.equals(message)) return;
     if(Settings.showChatWaypoints) {
+        if(Settings.onlyParseInHollows) {
+            if(!inCrystalHollows()) return;
+        }
         parseChatWaypoint(event, formattedMessage, message, content);
-    }
-    if(Settings.showChatWaypoints) {
         parseChatSharing(event, formattedMessage, message, content);
     }
 });

@@ -92,6 +92,10 @@ export function createServerWaypoint(server, name, location, automatic) {
         if(/(Jungle )?Temple/gi.exec(name) && getWaypoint(server, "Jungle Temple", "temple")) {
             return;
         }
+        if(!server.toLowerCase().startsWith("m")) {
+            console.warn("Automatic waypoint "+name+" has an invalid server name! ("+server+")");
+            return;
+        }
     }
     currentId++;
     serverList.waypoints.push({id: currentId, name: name, location: location});
@@ -278,4 +282,43 @@ export function getCoordinates(entity) {
     var y = Math.round(entity.getY());
     var z = Math.round(entity.getZ());
     return x+","+y+","+z;  
+}
+export function shareWaypoints(sharing, compact = false) {
+    var message = "";
+    if(compact) {
+        message = "%CRYSTALMAP=["
+        var currentMessage = "";
+        if(sharing.constructor !== Array) {
+            sharing = [sharing];
+        }
+        for(var index in sharing) {
+            let waypoint = sharing[index];
+            let name = waypoint.name.replaceAll("\"", "\\\"");
+            let text = "\""+name+"\"@"+waypoint.location+";";
+            if((currentMessage+text+"]").length > 256) {
+                message = message+currentMessage+"]\n%CRYSTALMAP=[";
+                currentMessage = text;
+            } else {
+                currentMessage = currentMessage+text;
+            }
+
+            if(index == sharing.length - 1) {
+                message = message+currentMessage+"]";
+                return message;
+            }
+        }
+        return message;
+    }
+    if(sharing.constructor === Array) {
+        for(var index in sharing) {
+            var waypoint = sharing[index];
+            message = message+waypoint.name+": "+waypoint.location.replaceAll(",", " ");
+            if(index != sharing.length - 1) {
+                message = message+", ";
+            }
+        }
+    } else {
+        message = sharing.name+": "+sharing.location.replaceAll(",", " ");
+    }
+    return message;
 }

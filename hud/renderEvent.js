@@ -11,64 +11,65 @@ import { renderIcon, renderRect } from "./renderUtils";
 import { registerServer, getArea, createRegion, getServerName, createWaypoint, getServerRegion, getWaypoint, parseCoordinates, getServer, getWaypoints } from "../waypoints";
 var apiOffline = false;
 
-const mapImage = new Image("crystalmap.png", "https://i.imgur.com/hlDUhZo.png");
-const magmaImage = new Image("crystalmap2.png", "https://i.imgur.com/HafT7bu.png");
-const mapArrow = new Image("mapArrow.png", "https://i.imgur.com/D9u8vVi.png");
+const mapImage = Image.fromUrl("https://i.imgur.com/hlDUhZo.png");
+const magmaImage = Image.fromUrl("https://i.imgur.com/HafT7bu.png");
+const mapArrow = Image.fromUrl("https://i.imgur.com/D9u8vVi.png");
 
 const genericIcon = {
-    "vanilla": new Image("generic_waypoint.png", "https://i.imgur.com/ePP6A2C.png"),
-    "furfsky": new Image("generic_waypoint_furf.png", "https://i.imgur.com/KkBwFpx.png")
+    "vanilla": Image.fromUrl("https://i.imgur.com/ePP6A2C.png"),
+    "furfsky": Image.fromUrl("https://i.imgur.com/KkBwFpx.png")
 }
-const entranceIcon = new Image("entrance.png", "https://i.imgur.com/tQ5wgV8.png");
+const entranceIcon = Image.fromUrl("https://i.imgur.com/tQ5wgV8.png");
 const grottoIcon = {
-    "vanilla": new Image("fairy_grotto.png", "https://i.imgur.com/bKaR3fq.png"),
-    "furfsky": new Image("fairy_grotto_furf.png", "https://i.imgur.com/IVTsnSc.png")
+    "vanilla": Image.fromUrl("https://i.imgur.com/bKaR3fq.png"),
+    "furfsky": Image.fromUrl("https://i.imgur.com/IVTsnSc.png")
 }
 const templeIcon = {
-    "vanilla": new Image("jungle_temple.png", "https://i.imgur.com/A6FQKAi.png"),
-    "furfsky": new Image("jungle_temple_furf.png", "https://i.imgur.com/yZFXMpJ.png"),
+    "vanilla": Image.fromUrl("https://i.imgur.com/A6FQKAi.png"),
+    "furfsky": Image.fromUrl("https://i.imgur.com/yZFXMpJ.png"),
 }
 const cityIcon = {
-    "vanilla": new Image("lost_precursor_city.png", "https://i.imgur.com/229wTg5.png"),
-    "furfsky": new Image("lost_precursor_city_furf.png", "https://i.imgur.com/qiOKcvm.png"),
+    "vanilla": Image.fromUrl("https://i.imgur.com/229wTg5.png"),
+    "furfsky": Image.fromUrl("https://i.imgur.com/qiOKcvm.png"),
 }
 const kingIcon = {
-    "vanilla": new Image("goblin_king.png", "https://i.imgur.com/Nf5TlQk.png"),
-    "furfsky": new Image("goblin_king_furf.png", "https://i.imgur.com/DRIb8Rd.png"),
+    "vanilla": Image.fromUrl("https://i.imgur.com/Nf5TlQk.png"),
+    "furfsky": Image.fromUrl("https://i.imgur.com/DRIb8Rd.png"),
 }
 const queenIcon = {
-    "vanilla": new Image("goblin_queens_den.png", "https://i.imgur.com/NxrepNN.png"),
-    "furfsky": new Image("goblin_queens_den_furf.png", "https://i.imgur.com/yN4yNwL.png"),
+    "vanilla": Image.fromUrl("https://i.imgur.com/NxrepNN.png"),
+    "furfsky": Image.fromUrl("https://i.imgur.com/yN4yNwL.png"),
 }
 const divanIcon = {
-    "vanilla": new Image("mines_of_divan.png", "https://i.imgur.com/zpHBXbi.png"),
-    "furfsky": new Image("mines_of_divan_furf.png", "https://i.imgur.com/iPQAu4b.png"),
+    "vanilla": Image.fromUrl("https://i.imgur.com/zpHBXbi.png"),
+    "furfsky": Image.fromUrl("https://i.imgur.com/iPQAu4b.png"),
 }
 const balIcon = {
-    "vanilla": new Image("khazad_dum.png", "https://i.imgur.com/PFAoHh1.png"),
-    "furfsky": new Image("khazad_dum_furf.png", "https://i.imgur.com/8GiZNCK.png"),
+    "vanilla": Image.fromUrl("https://i.imgur.com/PFAoHh1.png"),
+    "furfsky": Image.fromUrl("https://i.imgur.com/8GiZNCK.png"),
 }
 const corleoneIcon = {
-    "vanilla": new Image("corleone.png", "https://i.imgur.com/iXoq0MQ.png"),
-    "furfsky": new Image("corleone_furf.png", "https://i.imgur.com/MEh8dN6.png"),
+    "vanilla": Image.fromUrl("https://i.imgur.com/iXoq0MQ.png"),
+    "furfsky": Image.fromUrl("https://i.imgur.com/MEh8dN6.png"),
 }
 const odawaIcon = {
-    "vanilla": new Image("odawa.png", "https://i.imgur.com/kdEM9gD.png"),
-    "furfsky": new Image("odawa_furf.png", "https://i.imgur.com/bWAP04K.png"),
+    "vanilla": Image.fromUrl("https://i.imgur.com/kdEM9gD.png"),
+    "furfsky": Image.fromUrl("https://i.imgur.com/bWAP04K.png"),
 }
-
-// if api is down, the whole mod breaks
 var head;
 try {
-    head = new Image("head_"+Player.getUUID()+".png", "https://crafatar.com/avatars/"+Player.getUUID()+"?overlay&size=8&default=MHF_Steve");
+    head = Image.fromUrl("https://visage.surgeplay.com/face/512/"+Player.getUUID()+".png");
 } catch (error) {
     if(!apiOffline) {
-        console.warn("Crafatar seems to be offline. Switching to arrow icon...");
-        ChatLib.chat("&d[CrystalMap] &7Skull textures failed to load. Switching to arrow icon...");
+        console.warn("[CrystalMap] Couldn't load your head texture. (\"https://visage.surgeplay.com/face/512/"+Player.getUUID()+".png\"). Defaulting to arrow icon...");
+        console.warn("  Contents:");
+        console.warn(FileLib.getUrlContent("https://visage.surgeplay.com/face/512/"+Player.getUUID()+".png"));
+        ChatLib.chat("&d[CrystalMap] &7Head textures failed to load. Defaulting to arrow icon...");
         apiOffline = true;
         head = mapArrow;
     }
 }
+
 const entrances = [
     // TOP
     {x: 211, y: 86, z: 238},
@@ -149,6 +150,7 @@ export function onRender() {
     if(server == undefined) {
         console.error("Server region is undefined!");
         console.error(Scoreboard.getLines());
+        console.error("Server name: "+getServerName());
     } else {
         server.regions.forEach((region) => {
             if(area.equals(region.name)) {

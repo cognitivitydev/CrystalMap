@@ -24,7 +24,7 @@ import {
     WindowScreen,
     ScrollComponent,
 } from "../../Elementa";
-import { createServerWaypoint, editWaypoint, getServerName, getWaypoint, getWaypoints, removeServerWaypoint } from "../waypoints";
+import { createServerWaypoint, editWaypoint, getServer, getServerName, getWaypoint, getWaypoints, parseCoordinates, removeServerWaypoint } from "../waypoints";
 
 const Color = Java.type("java.awt.Color");
 const URL = Java.type("java.net.URL")
@@ -133,6 +133,11 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .onMouseClick(() => {
             textInput1.setText(name);
             textInput2.setText(coordinates);
+            if(parseCoordinates(coordinates).y < 64) {
+                magmaImage.setWidth((256).pixels());
+            } else {
+                magmaImage.setWidth((0).pixels());
+            }
             textInput3.setText(getServerName())
             dropName.setText("Create new waypoint...");
             if(getWaypoint(getServerName(), "New Waypoint")) {
@@ -149,12 +154,19 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setChildOf(dropWaypoint);
     dropTexts.push(dropText);
 
-    const waypointsArray = [];
+    let serverWaypoints = getServer(getServerName()).waypoints;
+    let waypointsArray = [];
+
+    waypointsArray = waypointsArray.concat(serverWaypoints);
     getWaypoints().forEach(servers => {
         servers.waypoints.forEach(serverWaypoint => {
-            waypointsArray.push(serverWaypoint);
+            if(!servers.server.equals(getServerName())) {
+                waypointsArray.push(serverWaypoint);
+            }
         });
-    })
+    });
+    
+
     for(var i = 0; i < waypointsArray.length; i++) {
         let waypoint = waypointsArray[i];
 
@@ -175,6 +187,11 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
             .onMouseClick(() => {
                 textInput1.setText(waypoint.name);
                 textInput2.setText(waypoint.location);
+                if(parseCoordinates(waypoint.location).y < 64) {
+                    magmaImage.setWidth((256).pixels());
+                } else {
+                    magmaImage.setWidth((0).pixels());
+                }
                 getWaypoints().forEach((server) => {
                     let serverName = server.server;
                     server.waypoints.forEach(serverWaypoint => {
@@ -193,6 +210,11 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
             .setX((5).percent())
             .setY(new CenterConstraint())
             .setChildOf(dropWaypoint);
+        getServer(getServerName()).waypoints.forEach((serverWaypoint) => {
+            if(serverWaypoint.id == waypoint.id) {
+                dropText.setText("§e✮ §r"+dropText.getText())
+            }
+        });
         dropTexts.push(dropText);
     }
     dropTexts = dropTexts.reverse();
@@ -374,7 +396,7 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
     const magmaImage = UIImage.Companion.ofURL(new URL("https://i.imgur.com/HafT7bu.png"))
         .setX((0).pixels())
         .setY((0).pixels())
-        .setWidth(((textInput2.getText() ? textInput2.getText().split(",")[1] : Player.getY()) >= 64 ? 0 : 256).pixels())
+        .setWidth(((textInput2.getText() ? textInput2.getText().split(",")[1] : parseCoordinates(coordinates).y) >= 64 ? 0 : 256).pixels())
         .setHeight(new AspectConstraint())
         .setChildOf(image);
 

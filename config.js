@@ -135,6 +135,15 @@ class Settings {
 
     // REQUIRES "Show Waypoints from Chat"
     @SwitchProperty({
+        name: "Only Show Waypoints in Crystal Hollows",
+        description: "Only show waypoints in chat when you are in the Crystal Hollows.",
+        category: "Waypoints",
+        subcategory: "Waypoint Creation"
+    })
+    onlyParseInHollows = true;
+
+    // REQUIRES "Show Waypoints from Chat"
+    @SwitchProperty({
         name: "Automatically Parse Waypoints from Chat",
         description: "Automatically parses waypoints sent in chat.\n&cOnly parses waypoints with a given description. (eg: \"king 512 64 512\")",
         category: "Waypoints",
@@ -192,6 +201,14 @@ class Settings {
         subcategory: "Waypoint Requests"
     })
     showCoopRequests = true;
+
+    @SwitchProperty({
+        name: "Show Path Line in Routes",
+        description: "Highlight requests sent in party chat. Sharing sends the message in co-op chat.",
+        category: "Waypoints",
+        subcategory: "Waypoint Routes"
+    })
+    showRouteLines = true;
 
     @SwitchProperty({
         name: "Player Icon",
@@ -646,6 +663,7 @@ class Settings {
     constructor() {
         this.initialize(this);
 
+        this.addDependency("Only Show Waypoints in Crystal Hollows", "Show Waypoints from Chat")
         this.addDependency("Automatically Parse Waypoints from Chat", "Show Waypoints from Chat")
 
         this.addDependency("Show Requests in All Chat", "Show Coordinate Requests")

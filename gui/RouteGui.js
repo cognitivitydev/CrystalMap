@@ -26,7 +26,7 @@ import {
     UIWrappedText,
 } from "../../Elementa";
 import { sort, findPath } from "../pathfinder";
-import { createServerWaypoint, editWaypoint, getCoordinates, getServerName, getWaypoint, getWaypoints, parseCoordinates, removeServerWaypoint } from "../waypoints";
+import { getCoordinates, parseCoordinates } from "../waypoints";
 
 const Color = Java.type("java.awt.Color");
 const URL = Java.type("java.net.URL")
@@ -245,7 +245,7 @@ export function openRouteGui() {
                     sortingType = selected.toLowerCase();
                     sortingCount = Math.max(Math.min(points, gemstones.waypoints[sortingType].length), 2);
 
-                    ChatLib.command("crystalmap route", true);
+                    openRouteGui()
                 }
             })    
             .setChildOf(block);
@@ -285,7 +285,7 @@ export function openRouteGui() {
                 sorting = false;
                 sortingCount = 0;
                 sortingType = "";
-                ChatLib.command("crystalmap route", true);
+                openRouteGui();
             })
             .setChildOf(block);
         if(path.length != 0) {
@@ -309,7 +309,7 @@ export function openRouteGui() {
     if(!gemstones) {
         new Thread(() => {
             gemstones = JSON.parse(FileLib.getUrlContent("https://raw.githubusercontent.com/cognitivitydev/CrystalHollows/main/gemstones.json").replaceAll("\r", ""));
-            ChatLib.command("crystalmap route", true);
+            openRouteGui();
         }).start();
     }
 }

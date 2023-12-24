@@ -6,10 +6,10 @@
 /// <reference types="../../CTAutocomplete" />
 /// <reference lib="es2015" />
 
-import { getServerName, getWaypoint } from "../waypoints";
+import { getServerName, getWaypoint, shareWaypoints } from "../waypoints";
 import Settings from "../config";
 
-const areas = "(temple|odawa|city|king( yolkar)?|queen|divan|bal|grotto|Jungle Temple|Lost Precursor City|King Yolkar|Goblin Queen'?s Den|Mines of Divan|Khazad-d[ûu]m|Fairy Grotto|(boss )?corleone)";
+const areas = "(temple|odawa|city|king( yolkar)?|queen|king( (and )?|/| / )queen|divan|mod|mines|bal|grotto|Jungle Temple|Lost Precursor City|King Yolkar|Goblin Queen'?s Den|Mines of Divan|Khazad-d[ûu]m|Fairy Grotto|(boss )?corleone)";
 
 export function parseChatSharing(event, formattedMessage, message, content) {
     var channel = "/ac"
@@ -21,22 +21,26 @@ export function parseChatSharing(event, formattedMessage, message, content) {
         if(!Settings.showCoopRequests) return;
         channel = "/cc"
     }
-    var coords = new RegExp(areas+" (coord(inate)?s?)\\??", "gi").exec(content);
-    if(!new RegExp(areas+" (coord(inate)?s?)\\??", "gi").exec(content)) return;
-    var area = new RegExp(areas+"(?= (coord(inate)?s?)\\??)").exec(content);
+    var coords = new RegExp(areas+" (coo?rd(inate)?s?)\\??", "gi").exec(content);
+    if(!new RegExp(areas+" (coo?rd(inate)?s?)\\??", "gi").exec(content)) return;
+    var area = new RegExp(areas+"(?= (coo?rd(inate)?s?)\\??)").exec(content);
     if(!area) return; //should never be false
     var server = getServerName();
     var waypoint = undefined;
-    if(/Jungle( Temple)?/gi.exec(area)) {
+    var multipleWaypoints = false;
+    if(/(Jungle )?Temple/gi.exec(area)) {
         waypoint = getWaypoint(server, "Jungle Temple", "temple");
     } else if(/(Lost Precursor )?city/gi.exec(area)) {
         waypoint = getWaypoint(server, "Lost Precursor City", "city");
+    } else if(/king( (and )?|\/| \/ )queen/gi.exec(area)) {
+        multipleWaypoints = true;
+        waypoint = [getWaypoint(server, "Goblin King", "King Yolkar", "king"), getWaypoint(server, "Goblin Queen's Den", "Goblin Queens Den", "queen")];
     } else if(/King( Yolkar)?/gi.exec(area)) {
         waypoint = getWaypoint(server, "Goblin King", "King Yolkar", "king");
     } else if(/(queen)|(Goblin Queen'?s Den)/gi.exec(area)) {
         waypoint = getWaypoint(server, "Goblin Queen's Den", "Goblin Queens Den", "queen");
-    } else if(/(Mines of )?Divan/gi.exec(area)) {
-        waypoint = getWaypoint(server, "Mines of Divan", "divan");
+    } else if(/((Mines of )?Divan)|(mod)|(mines)/gi.exec(area)) {
+        waypoint = getWaypoint(server, "Mines of Divan", "divan", "mod", "mines");
     } else if(/(bal)|(Khazad-d[ûu]m)/gi.exec(area)) {
         waypoint = getWaypoint(server, "Khazad-dûm", "bal");
     } else if(/(Fairy )?Grotto/gi.exec(area)) {
@@ -49,8 +53,9 @@ export function parseChatSharing(event, formattedMessage, message, content) {
         return;
     }
     var highlighted = "&b&n"+coords[0];
-    cancel(event)
-    if(waypoint == undefined) {
+    cancel(event);
+    var filtered = waypoint == undefined || !multipleWaypoints ? undefined : waypoint.filter(waypoints => waypoints != undefined);
+    if(waypoint == undefined || (multipleWaypoints && filtered.length == 0)) {
         highlighted = "&7&n"+coords[0];
         ChatLib.chat(new Message(
             formattedMessage.split(coords[0])[0],
@@ -59,9 +64,20 @@ export function parseChatSharing(event, formattedMessage, message, content) {
         ));
         return;
     }
-    ChatLib.chat(new Message(
-        formattedMessage.split(coords[0])[0],
-        new TextComponent(highlighted).setClick("run_command", channel+" "+waypoint.name+" "+waypoint.location.replaceAll(",", " ")),
-        formattedMessage.split(coords[0])[1]
-    ));
+    if(multipleWaypoints && filtered.length != 0) {
+        if(filtered.length != waypoint.length) {
+            highlighted = "&3&n"+coords[0];
+        }
+        ChatLib.chat(new Message(
+            formattedMessage.split(coords[0])[0],
+            new TextComponent(highlighted).setClick("run_command", channel+" "+shareWaypoints(filtered)),
+            formattedMessage.split(coords[0])[1]
+        ));
+    } else {
+        ChatLib.chat(new Message(
+            formattedMessage.split(coords[0])[0],
+            new TextComponent(highlighted).setClick("run_command", channel+" "+shareWaypoints(waypoint)),
+            formattedMessage.split(coords[0])[1]
+        ));
+    }
  }

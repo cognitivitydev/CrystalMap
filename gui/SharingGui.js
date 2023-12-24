@@ -24,7 +24,7 @@ import {
     WindowScreen,
     ScrollComponent,
 } from "../../Elementa";
-import { createServerWaypoint, createWaypoint, editWaypoint, getServerName, getWaypoint, getWaypointFromId, getWaypoints, removeServerWaypoint } from "../waypoints";
+import { getWaypointFromId, shareWaypoints } from "../waypoints";
 
 const Color = Java.type("java.awt.Color");
 
@@ -95,7 +95,7 @@ export function openSharingGui(id) {
         })
         .onMouseClick(() => {
             Client.currentGui.close();
-            ChatLib.command("ac "+waypoint.name+": "+waypoint.location.replaceAll(",", " "));
+            ChatLib.command("ac "+shareWaypoints(waypoint));
         })
         .setChildOf(block);
 
@@ -124,7 +124,7 @@ export function openSharingGui(id) {
         })
         .onMouseClick(() => {
             Client.currentGui.close();
-            ChatLib.command("pc "+waypoint.name+": "+waypoint.location.replaceAll(",", " "));
+            ChatLib.command("pc "+shareWaypoints(waypoint));
         })
         .setChildOf(block);
 
@@ -153,7 +153,7 @@ export function openSharingGui(id) {
         })
         .onMouseClick(() => {
             Client.currentGui.close();
-            ChatLib.command("cc "+waypoint.name+": "+waypoint.location.replaceAll(",", " "));
+            ChatLib.command("cc "+shareWaypoints(waypoint));
         })
         .setChildOf(block);
 
