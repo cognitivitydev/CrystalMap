@@ -7,6 +7,7 @@
 /// <reference lib="es2015" />
 
 import {
+    UIContainer,
     UIBlock,
     FillConstraint,
     UIRoundedRectangle,
@@ -15,6 +16,7 @@ import {
     UIText,
     AdditiveConstraint,
     SiblingConstraint,
+    CramSiblingConstraint,
     animate,
     Animations, 
     ConstantColorConstraint,
@@ -100,16 +102,27 @@ export function openRouteGui() {
             .setHeight(new SubtractiveConstraint((100).percent(), (30).pixels()))
             .setColor(new Color(0, 0, 0, 220 / 255));
 
-        const downloadingText1 = new UIText("↻")
+        const sortingText1 = new UIText("↻")
             .setX(new CenterConstraint())
             .setY(new SubtractiveConstraint(new CenterConstraint(), (20).pixels()))
             .setTextScale((7.5).pixels())
             .setChildOf(block);
-        const downloadingText2 = new UIText("Sorting "+sortingCount+" locations...")
+        const sortingText2 = new UIText("Sorting "+sortingCount+" locations...")
             .setX(new CenterConstraint())
             .setY(new AdditiveConstraint(new CenterConstraint(), (20).pixels()))
             .setTextScale((2.5).pixels())
             .setChildOf(block);
+        const sortingText3 = new UIText("Elapsed: 0.0s")
+            .setX((2).percent())
+            .setY((92).percent())
+            .setChildOf(block);
+        const sortingText4 = new UIText("Estimate: 0.0s")
+            .setX((2).percent())
+            .setY((95).percent())
+            .setChildOf(block);
+        var finished = false;
+        var starting = Date.now();
+        var estimate = Math.round(gemstones.waypoints[sortingType].length / 120)/100;
         new Thread(() => {
             var points = findPath(sort(getCoordinates(), gemstones.waypoints[sortingType]).slice(0, sortingCount));
             for(var point of points) {
@@ -123,8 +136,19 @@ export function openRouteGui() {
             sortingCount = 0;
             sortingType = "";
             Client.currentGui.close();
+            finished = true;
         }).start();
+        var timerThread = new Thread(() => {
+            while(!finished) {
+                sortingText3.setText("Elapsed: "+Math.round(100*(Date.now()-starting)/1000)/100+"s")
+                sortingText4.setText("Estimate: "+estimate+"s")
+                timerThread.sleep(1);
+            }
+        })
+        timerThread.start();
     } else {
+        block.setWidth((45).percent()).setHeight((50).percent());
+
         let ores = [];
         var selected = "";
         for (let key in gemstones.waypoints) {
@@ -132,17 +156,22 @@ export function openRouteGui() {
                 ores.push(key.toUpperCase());
             }
         }
+        const buttonsBlock = new UIContainer()
+            .setX((10).percent())
+            .setY((15).pixels())
+            .setWidth((40).percent())
+            .setHeight(new FillConstraint())
+            .setChildOf(block);
 
         var buttons = [];
 
         for(let index in ores) {
             let ore = ores[index];
-            block.setWidth((45).percent()).setHeight((50).percent());
             let oreButton = new UIRoundedRectangle(3)
                 .setColor(new Color(10 / 255, 64 / 255, 127 / 255))
-                .setX((10).percent())
-                .setY(new AdditiveConstraint(new SiblingConstraint(), (15).pixels()))
-                .setWidth((30).percent())
+                .setX(new CramSiblingConstraint(15))
+                .setY(new CramSiblingConstraint(15))
+                .setWidth(new SubtractiveConstraint((45).percent(), (0).pixels()))
                 .setHeight((20).pixels())
                 .onMouseEnter((comp) => {
                     animate(comp, (animation) => {
@@ -162,7 +191,7 @@ export function openRouteGui() {
                         }
                     });
                 })
-                .setChildOf(block);
+                .setChildOf(buttonsBlock);
             oreButton.onMouseClick(() => {
                 selected = ore;
                 buttons.forEach(button => button.setColor(new Color(10 / 255, 64 / 255, 127 / 255)));
