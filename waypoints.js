@@ -1,6 +1,6 @@
 /* 
- * This module can be found on GitHub at https://github.com/cognitivitydev/CrystalMap/
- * Please insult my amazing code.
+ * This module can be found at https://github.com/cognitivitydev/CrystalMap/.
+ * You can report any issues or add suggestions there.
  */
 
 /// <reference types="../CTAutocomplete" />

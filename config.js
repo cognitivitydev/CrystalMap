@@ -1,22 +1,28 @@
 /* 
- * This module can be found on GitHub at https://github.com/cognitivitydev/CrystalMap/
- * Please insult my amazing code.
+ * This module can be found at https://github.com/cognitivitydev/CrystalMap/.
+ * You can report any issues or add suggestions there.
  */
 
 /// <reference types="../CTAutocomplete" />
 /// <reference lib="es2015" />
 
-import { @Vigilant, @SwitchProperty, @DecimalSliderProperty, @SelectorProperty, @PercentSliderProperty, @ButtonProperty, @SliderProperty, @CheckboxProperty, @ColorProperty, Color } from "../Vigilance";
+import { @Vigilant, @SwitchProperty, @DecimalSliderProperty, @SelectorProperty, @PercentSliderProperty, @ButtonProperty, @SliderProperty, @CheckboxProperty, @ColorProperty, @NumberProperty, @TextProperty, @ParagraphProperty, Color } from "../Vigilance";
 
 @Vigilant("CrystalMap", "Settings", {
     getCategoryComparator: () => (a, b) => {
-        const categories = ["Map", "Waypoints", "Icons"];
+        const categories = ["Map", "Waypoints", "Icons", "Solvers"];
+
+        return categories.indexOf(a.name) - categories.indexOf(b.name);
+    },
+    getSubcategoryComparator: () => (a, b) => {
+        const categories = ["Display", "Ping", "Developer Options"];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     }
 })
 class Settings {
-    @CheckboxProperty({
+    // HIDDEN
+    @TextProperty({
         name: "Latest Version",
         category: "General",
         hidden: true
@@ -43,13 +49,23 @@ class Settings {
     })
     mapY = 0;
 
-
     @SwitchProperty({
         name: "Minimap",
         description: "Toggles the minimap's display.",
         category: "Map"
     })
     map = true;
+
+    @ButtonProperty({
+        name: "Create a Waypoint",
+        description: "Opens a menu for creating waypoints.",
+        category: "Map",
+        placeholder: "Open...",
+    })
+    openWaypointGui() {
+        Client.currentGui.close()
+        ChatLib.command("crystalmap waypoint", true)
+    }
 
     @DecimalSliderProperty({
         name: "Scale",
@@ -72,18 +88,65 @@ class Settings {
         Client.currentGui.close()
         ChatLib.command("crystalmap gui", true)
     }
-
+    
     @ButtonProperty({
-        name: "Create a Waypoint",
-        description: "Opens a menu for creating waypoints.",
+        name: "Reset Location",
+        description: "Resets the location of the map to the top left corner.",
         category: "Map",
         subcategory: "Display",
-        placeholder: "Open...",
+        placeholder: "Reset",
     })
-    createWaypointGui() {
+    resetMap() {
         Client.currentGui.close()
-        ChatLib.command("crystalmap waypoint", true)
+        this.mapX = 0;
+        this.mapY = 0;
     }
+
+    @SliderProperty({
+        name: "Ping",
+        description: "Set your ping to Hypixel in milliseconds.",
+        category: "Map",
+        subcategory: "Ping",
+        min: 0,
+        max: 800
+    })
+    ping = 100;
+
+    @ButtonProperty({
+        name: "Automatically Ping",
+        description: "Attempt to update your ping. This may not be 100% accurate due to varying server lag.",
+        category: "Map",
+        subcategory: "Ping",
+        placeholder: "Ping...",
+    })
+    pingHypixel() {
+        Client.currentGui.close();
+        ChatLib.command("crystalmap ping", true)
+    }
+
+    @CheckboxProperty({
+        name: "&cEnable Developer Options",
+        description: "Only enable this if you know what you're doing!",
+        category: "Map",
+        subcategory: "Developer Options"
+    })
+    developer = false;
+
+    // REQUIRES "Enable Developer Options"
+    @ParagraphProperty({
+        name: "Route Repository",
+        category: "Map",
+        subcategory: "Developer Options"
+    })
+    routeURL = "https://raw.githubusercontent.com/cognitivitydev/CrystalHollows/main/gemstones.json";
+
+    // REQUIRES "Enable Developer Options"
+    @SwitchProperty({
+        name: "Metal Detector Debug",
+        category: "Map",
+        subcategory: "Developer Options"
+    })
+    metalDetectorDebug = false;
 
     @SwitchProperty({
         name: "Beacon Waypoints",
@@ -95,11 +158,20 @@ class Settings {
 
     @ColorProperty({
         name: "Waypoint Beacon Color",
-        description: "Automatically centers icons in the middle of the area's box.",
+        description: "Changes the color of the beacon at waypoints.",
         category: "Waypoints",
         subcategory: "Beacons"
     })
     waypointColor = new Color(99 / 255, 66 / 255, 245 / 255, 1.0);
+
+    // REQUIRES "Beacon Waypoints"
+    @SwitchProperty({
+        name: "Show Closest Nucleus Entrance",
+        description: "Shows the closest entrance to the Crystal Nucleus as a beacon waypoint.",
+        category: "Waypoints",
+        subcategory: "Beacons"
+    })
+    nucleusWaypoints = true;
 
     @SwitchProperty({
         name: "Automatically Create Waypoints",
@@ -119,7 +191,7 @@ class Settings {
 
     @SwitchProperty({
         name: "Automatically Create Boss Corleone Waypoint",
-        description: "Creates a waypoint when you are near Boss Corleone.",
+        description: "Creates a waypoint when you are near Boss Corleone.\n&eThe detection distance for this feature is limited.",
         category: "Waypoints",
         subcategory: "Waypoint Creation"
     })
@@ -217,6 +289,14 @@ class Settings {
         subcategory: "Waypoint Requests"
     })
     showCoopRequests = true;
+
+    @SwitchProperty({
+        name: "Automatically Update Routes",
+        description: "Automatically updates the routes repository if a new version is available.",
+        category: "Waypoints",
+        subcategory: "Waypoint Routes"
+    })
+    updateRoutes = true;
 
     @SwitchProperty({
         name: "Show Path Line in Routes",
@@ -676,8 +756,48 @@ class Settings {
     })
     iconOdawaSize = 1.0;
 
+    @SwitchProperty({
+        name: "Metal Detector Solver",
+        description: "Automatically create waypoints to chests in the Mines of Divan.",
+        category: "Solvers",
+        subcategory: "Mines of Divan",
+    })
+    divanSolver = true;
+
+    // REQUIRES "Metal Detector Solver"
+    @ColorProperty({
+        name: "Metal Detector Line Color",
+        description: "Changes the color of the line towards chests in the Mines of Divan.",
+        category: "Solvers",
+        subcategory: "Mines of Divan",
+        allowAlpha: false
+    })
+    divanLine = new Color(66 / 255, 245 / 255, 111 / 255, 1.0);
+
+    // REQUIRES "Metal Detector Solver"
+    @ColorProperty({
+        name: "Metal Detector Beacon Color",
+        description: "Changes the color of the beacon at chests in the Mines of Divan.",
+        category: "Solvers",
+        subcategory: "Mines of Divan",
+        allowAlpha: false
+    })
+    divanBeacon = new Color(66 / 255, 245 / 255, 156 / 255, 1.0);
+
+    @SelectorProperty({
+        name: "Wishing Compass Solver",
+        description: "Automatically create waypoints from Wishing Compasses.",
+        category: "Solvers",
+        subcategory: "Wishing Compass",
+        options: ["None", "CrystalMap", "NEU"]
+    })
+    compassSolver = 1;
+
     constructor() {
         this.initialize(this);
+
+        this.addDependency("Route Repository", "&cEnable Developer Options")
+        this.addDependency("Metal Detector Debug", "&cEnable Developer Options")
 
         this.addDependency("Only Show Waypoints in Crystal Hollows", "Show Waypoints from Chat")
         this.addDependency("Automatically Parse Waypoints from Chat", "Show Waypoints from Chat")
@@ -687,6 +807,8 @@ class Settings {
         this.addDependency("Show Requests in Co-op Chat", "Show Coordinate Requests")
 
         this.addDependency("Center Icon With Area's Box", "Show Waypoint's Area")
+
+        this.addDependency("Show Closest Nucleus Entrance", "Show Closest Nucleus Entrance")
 
         this.addDependency("Automatically Create King Yolkar Waypoint", "Automatically Create Waypoints")
         this.addDependency("Automatically Create Odawa Waypoint", "Automatically Create Waypoints")
@@ -737,6 +859,10 @@ class Settings {
         this.addDependency("Odawa Icon Type", "Odawa Icon");
         this.addDependency("Odawa Icon Size", "Odawa Icon");
 
+        this.addDependency("Metal Detector Line Color", "Metal Detector Solver");
+        this.addDependency("Metal Detector Beacon Color", "Metal Detector Solver");
+
+        this.setCategoryDescription("Map", "&5[--- &d&lCRYSTALMAP &r&5---]\n\n\n&b/cm [name] [coordinates]  &8- &7Creates a waypoint with a name or coordinates, if specified.\n&b/cm settings  &8- &7Opens settings.\n&b/cm route  &8- &7Opens a menu for creating automatic routes.\n&b/cm gui  &8- &7Opens a menu to change the location of the map.\n&b/cm remove &3<name>  &8- &7Removes a waypoint by name.\n&b/cm ping  &8- &7Updates your ping.\n\n\nFound a bug? Report it at:\n&3&nhttps://github.com/cognitivitydev/CrystalMap\n\n&7Version 1.1.0")
         this.setCategoryDescription("Icons", "&c&lDISCLAIMER\n\n&7Icons using the \"FurfSky\" type are from the &5FurfSky Reborn &7texture pack.\n&7Their discord and the download to the texture pack can be found at &9&ndiscord.gg/fsr&7.\n\n\n\nUsing a scale other than 0.5, 1.0, or 2.0 may cause the icon to appear distorted.");
     }
 }

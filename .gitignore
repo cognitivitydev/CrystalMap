@@ -1,2 +1,4 @@
-# remove user config
+# user config
 config.toml
+# automatically generated gemstone repository (https://raw.githubusercontent.com/cognitivitydev/CrystalHollows/main/gemstones.json)
+gemstones.json

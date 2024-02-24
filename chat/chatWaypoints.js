@@ -1,6 +1,6 @@
 /* 
- * This module can be found on GitHub at https://github.com/cognitivitydev/CrystalMap/
- * Please insult my amazing code.
+ * This module can be found at https://github.com/cognitivitydev/CrystalMap/.
+ * You can report any issues or add suggestions there.
  */
 
 /// <reference types="../../CTAutocomplete" />
@@ -12,13 +12,7 @@ import { createWaypoint } from "../waypoints";
 const areas = "(temple|odawa|city|king|queen|divan|bal|grotto|Jungle Temple|Lost Precursor City|King Yolkar|Goblin Queen'?s Den|Mines of Divan|Khazad-d[ûu]m|Fairy Grotto|(boss )?corleone)";
 //(?!%CRYSTALMAP=\[\".+\"@\d{1,3},\d{1,3},\d{1,3};])\\n(?=%CRYSTALMAP=\[\".+\"@\d{1,3},\d{1,3},\d{1,3};])
 export function parseChatWaypoint(event, formattedMessage, message, content) {
-    var coords = /^%CRYSTALMAP=\[(".+"@\d{1,3},\d{1,3},\d{1,3};)+]$/g.exec(content);
-    if(coords) {
-        //match seperaetely
-        ChatLib.chat(/(?!%CRYSTALMAP=\[)(".+"@\d{1,3},\d{1,3},\d{1,3};)(".+"@\d{1,3},\d{1,3},\d{1,3};)(?=])/g.exec(content).toString());
-        return;
-    }
-    coords = /^\$SBECHWP:.+@-[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}$/g.exec(content);
+    var coords = /^\$SBECHWP:.+@-[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}$/g.exec(content);
     if(coords) {
         var waypointName = coords[0].replace("$SBECHWP:", "").replace(/@-[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}$/g, "")
         if(waypointName) {
@@ -36,12 +30,12 @@ export function parseChatWaypoint(event, formattedMessage, message, content) {
             return;
         }
     }
-    if(/(?!(^|\s))[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, ){1,2}[0-9]{1,3}(?=\s|$)/g.exec(content)) {
+    if(/(?!(^|\s))[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, ){1,2}[0-9]{1,3}(?=\s|$)/gi.exec(content)) {
         var newMessage = new Message(formattedMessage);
         coords = content.match(new RegExp(areas + ":? [0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}(?=(\s|$|,? ))", "gi"));
         if(coords) {
             for(var coord of coords) {
-                coordinates = /[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}(?=\s|$)/g.exec(coord)[0];
+                coordinates = /[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}(?=\s|$)/gi.exec(coord)[0];
                 waypointName = coord.replace(coordinates, "").replace(":", "").trim();
                 waypoint = "&5&n"+waypointName+"&d&n "+coordinates;
                 cancel(event);
@@ -81,7 +75,7 @@ export function parseChatWaypoint(event, formattedMessage, message, content) {
                 return;
             }
         }
-        coords = /(\s|^)[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, ){1,2}[0-9]{1,3}(?=\s|$)/g.exec(content);
+        coords = /(\s|^)[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, ){1,2}[0-9]{1,3}(?=\s|$)/gi.exec(content);
         if(coords) {
             coords = coords[0].trim();
             cancel(event);

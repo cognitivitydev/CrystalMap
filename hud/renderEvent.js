@@ -1,6 +1,6 @@
 /* 
- * This module can be found on GitHub at https://github.com/cognitivitydev/CrystalMap/
- * Please insult my amazing code.
+ * This module can be found at https://github.com/cognitivitydev/CrystalMap/.
+ * You can report any issues or add suggestions there.
  */
 
 /// <reference types="../../CTAutocomplete" />
@@ -153,16 +153,18 @@ export function onRender() {
         console.error("Server name: "+getServerName());
     } else {
         server.regions.forEach((region) => {
-            if(area.equals(region.name)) {
-                if(Player.getX() < region.min.x || region.min.x == 0) {
+            if(area.equals(region.name) && (Player.getX() >= 563 || Player.getX() <= 463 || Player.getZ() >= 563 || Player.getZ() <= 463)) {
+                if((Player.getX() < region.min.x && region.min.x - Player.getX() < 50) || region.min.x == 0) {
                     region.min.x = Player.getX();
-                } else if(Player.getX() > region.max.x) {
+                }
+                if((Player.getX() > region.max.x && Player.getX() - region.max.x < 50) || region.max.x == 0) {
                     region.max.x = Player.getX();
                 }
         
-                if(Player.getZ() < region.min.z || region.max.x == 0) {
+                if((Player.getZ() < region.min.z && region.min.z - Player.getZ() < 50) || region.max.z == 0) {
                     region.min.z = Player.getZ();
-                } else if(Player.getZ() > region.max.z) {
+                }
+                if((Player.getZ() > region.max.z && Player.getZ() - region.max.z < 50) || region.max.z == 0) {
                     region.max.z = Player.getZ();
                 }
             }

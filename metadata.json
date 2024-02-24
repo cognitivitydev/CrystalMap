@@ -2,7 +2,7 @@
   "name": "CrystalMap",
   "description": "A lightweight module for creating and managing waypoints in the Crystal Hollows.",
   "author": "cognitivity",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "entry": "index.js",
-  "requires": ["BeaconBeam", "Elementa", "RenderLibV2", "Vigilance"]
+  "requires": ["BeaconBeam", "ClientsideChat", "Elementa", "RenderLibV2", "Vigilance"]
 }

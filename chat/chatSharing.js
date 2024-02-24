@@ -1,6 +1,6 @@
 /* 
- * This module can be found on GitHub at https://github.com/cognitivitydev/CrystalMap/
- * Please insult my amazing code.
+ * This module can be found at https://github.com/cognitivitydev/CrystalMap/.
+ * You can report any issues or add suggestions there.
  */
 
 /// <reference types="../../CTAutocomplete" />
@@ -23,7 +23,7 @@ export function parseChatSharing(event, formattedMessage, message, content) {
     }
     var coords = new RegExp(areas+" (coo?rd(inate)?s?)\\??", "gi").exec(content);
     if(!new RegExp(areas+" (coo?rd(inate)?s?)\\??", "gi").exec(content)) return;
-    var area = new RegExp(areas+"(?= (coo?rd(inate)?s?)\\??)").exec(content);
+    var area = new RegExp(areas+"(?= (coo?rd(inate)?s?)\\??)", "gi").exec(content);
     if(!area) return; //should never be false
     var server = getServerName();
     var waypoint = undefined;

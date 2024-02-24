@@ -1,6 +1,6 @@
 /* 
- * This module can be found on GitHub at https://github.com/cognitivitydev/CrystalMap/
- * Please insult my amazing code.
+ * This module can be found at https://github.com/cognitivitydev/CrystalMap/.
+ * You can report any issues or add suggestions there.
  */
 
 /// <reference types="../../CTAutocomplete" />
@@ -44,6 +44,39 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setWidth(new SubtractiveConstraint(new FillConstraint(), (30).pixels()))
         .setHeight(new SubtractiveConstraint(new FillConstraint(), (30).pixels()))
         .setChildOf(window);
+
+    const settingsBlock = new UIBlock()
+        .setX((1).percent())
+        .setY((2).percent())
+        .setWidth((75).pixels())
+        .setHeight((20).pixels())
+        .setColor(new Color(21 / 255, 24 / 255, 28 / 255, 1))
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.2, new ConstantColorConstraint(new Color(17 / 255, 19 / 255, 22 / 255, 1)));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.IN_EXP, 0.2, new ConstantColorConstraint(new Color(21 / 255, 24 / 255, 28 / 255, 1)));
+            });
+        })
+        .onMouseClick(() => {
+            ChatLib.command("crystalmap settings", true)
+        })
+        .setChildOf(block);
+
+    const settingsName = new UIText("Settings", false)
+        .setX((10).percent())
+        .setY(new CenterConstraint())
+        .setChildOf(settingsBlock);
+
+    const settingsIcon = new UIText("˃", false)
+        .setX(new SubtractiveConstraint((100).percent(), (12).pixels()))
+        .setY((20).percent())
+        .setWidth((6).pixels())
+        .setChildOf(settingsBlock);
+
 
     const routeBlock = new UIBlock()
         .setX(new AdditiveConstraint((5).percent(), (2).pixels()))
