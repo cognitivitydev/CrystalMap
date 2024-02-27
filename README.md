@@ -1,3 +1,6 @@
+> [!WARNING]
+> This module (and many others) are not currently working due to an issue with Imgur. An update will be pushed shortly to resolve this.
+
 # CrystalMap
 
 ## Installation
