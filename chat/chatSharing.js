@@ -6,12 +6,19 @@
 /// <reference types="../../CTAutocomplete" />
 /// <reference lib="es2015" />
 
-import { getServerName, getWaypoint, shareWaypoints } from "../waypoints";
+import { getServerName, getWaypoint, inCrystalHollows, shareWaypoints } from "../WaypointManager";
 import Settings from "../config";
 
 const areas = "(temple|odawa|city|king( yolkar)?|queen|king( (and )?|/| / )queen|divan|mod|mines|bal|grotto|Jungle Temple|Lost Precursor City|King Yolkar|Goblin Queen'?s Den|Mines of Divan|Khazad-d[ûu]m|Fairy Grotto|(boss )?corleone)";
 
-export function parseChatSharing(event, formattedMessage, message, content) {
+register("chat", (event) => {
+    var formattedMessage = ChatLib.getChatMessage(event);
+    var message = ChatLib.removeFormatting(formattedMessage);
+    var content = message.replace(/^((Party|Co-op) > )?(\[[0-9]+\] )?(\S )?(\[.+\] )?[A-Za-z0-9_]{3,16}( .)?: (?!$)/g, "");
+    if(content.equals(message)) return;
+    if(!Settings.showChatWaypoints) return;
+    if(Settings.onlyParseInHollows && !inCrystalHollows()) return;
+
     var channel = "/ac"
     if(message.startsWith("Party > ")) {
         if(!Settings.showPartyRequests) return;
@@ -80,4 +87,4 @@ export function parseChatSharing(event, formattedMessage, message, content) {
             formattedMessage.split(coords[0])[1]
         ));
     }
- }
+});

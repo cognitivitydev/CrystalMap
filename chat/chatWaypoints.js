@@ -7,37 +7,55 @@
 /// <reference lib="es2015" />
 
 import Settings from "../config";
-import { createWaypoint } from "../waypoints";
+import { createWaypoint, inCrystalHollows } from "../WaypointManager";
 
 const areas = "(temple|odawa|city|king|queen|divan|bal|grotto|Jungle Temple|Lost Precursor City|King Yolkar|Goblin Queen'?s Den|Mines of Divan|Khazad-d[ûu]m|Fairy Grotto|(boss )?corleone)";
-//(?!%CRYSTALMAP=\[\".+\"@\d{1,3},\d{1,3},\d{1,3};])\\n(?=%CRYSTALMAP=\[\".+\"@\d{1,3},\d{1,3},\d{1,3};])
-export function parseChatWaypoint(event, formattedMessage, message, content) {
-    var coords = /^\$SBECHWP:.+@-[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}$/g.exec(content);
-    if(coords) {
-        var waypointName = coords[0].replace("$SBECHWP:", "").replace(/@-[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}$/g, "")
-        if(waypointName) {
-            cancel(event);
-            waypoint = ("&d&n"+coords[0]+"&r").replace(waypointName, "&5&n"+waypointName+"&d&n");
-            coordinates = coords[0].replace("$SBECHWP:"+waypointName+"@-", "");
-            ChatLib.chat(new Message(
-                formattedMessage.split(coords[0])[0],
-                new TextComponent(waypoint).setClick("run_command", "/crystalmap waypoint "+coordinates+" "+waypointName),
-                formattedMessage.split(coords[0])[1]
-            ));
-            if(Settings.parseChatWaypoints) {
-                createWaypoint(waypointName, coordinates, true);
-            }
-            return;
+
+register("chat", (event) => {
+    var formattedMessage = ChatLib.getChatMessage(event);
+    var message = ChatLib.removeFormatting(formattedMessage);
+    var content = message.replace(/^((Party|Co-op) > )?(\[[0-9]+\] )?(\S )?(\[.+\] )?[A-Za-z0-9_]{3,16}( .)?: (?!$)/g, "");
+    if(content.equals(message)) return;
+    if(!Settings.showChatWaypoints) return;
+    if(Settings.onlyParseInHollows && !inCrystalHollows()) return;
+    var waypointSBE = sbe(content);
+    if(waypointSBE) {
+        cancel(event);
+        var text = ("&d&n"+content+"&r").replace(waypointSBE.name, "&5&n"+waypointSBE.name+"&d&n");
+        ChatLib.chat(new Message(
+            formattedMessage.split(content)[0],
+            new TextComponent(text).setClick("run_command", "/crystalmap waypoint "+waypointSBE.name+" "+waypointSBE.coordinates),
+            formattedMessage.split(content)[1]
+        ));
+        if(Settings.parseChatWaypoints) {
+            createWaypoint(waypointSBE.name, waypointSBE.coordinates, true);
         }
+        return;
+    }
+    var waypointCM = cm(content);
+    if(waypointCM) {
+        cancel(event);
+        var text = ("&d&n"+content+"&r");
+        ChatLib.chat(new Message(
+            formattedMessage.split(content)[0],
+            new TextComponent(text),
+            formattedMessage.split(content)[1]
+        ));
+        if(Settings.parseChatWaypoints) {
+            for(let waypoint of waypointCM) {
+                createWaypoint(waypoint.name, waypoint.coordinates, true);
+            }
+        }
+        return;
     }
     if(/(?!(^|\s))[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, ){1,2}[0-9]{1,3}(?=\s|$)/gi.exec(content)) {
         var newMessage = new Message(formattedMessage);
-        coords = content.match(new RegExp(areas + ":? [0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}(?=(\s|$|,? ))", "gi"));
+        var coords = content.match(new RegExp(areas + ":? [0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}(?=(\s|$|,? ))", "gi"));
         if(coords) {
             for(var coord of coords) {
-                coordinates = /[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}(?=\s|$)/gi.exec(coord)[0];
-                waypointName = coord.replace(coordinates, "").replace(":", "").trim();
-                waypoint = "&5&n"+waypointName+"&d&n "+coordinates;
+                var coordinates = /[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}(?=\s|$)/gi.exec(coord)[0];
+                var waypointName = coord.replace(coordinates, "").replace(":", "").trim();
+                var waypoint = "&5&n"+waypointName+"&d&n "+coordinates;
                 cancel(event);
                 newMessage = new Message(
                     newMessage.getFormattedText().split(coord)[0],
@@ -57,9 +75,9 @@ export function parseChatWaypoint(event, formattedMessage, message, content) {
         coords = content.match(new RegExp("[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}:? " + areas, "gi"));
         if(coords) {
             for(var coord of coords) {
-                coordinates = /[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}/g.exec(coords[0])[0];
-                waypointName = coords[0].replace(coordinates, "").replace(":", "").trim();
-                waypoint = "&d&n"+coordinates+" &5&n"+waypointName;
+                var coordinates = /[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}/g.exec(coords[0])[0];
+                var waypointName = coords[0].replace(coordinates, "").replace(":", "").trim();
+                var waypoint = "&d&n"+coordinates+" &5&n"+waypointName;
                 cancel(event);
                 newMessage = new Message(
                     newMessage.getFormattedText().split(coord)[0],
@@ -87,4 +105,34 @@ export function parseChatWaypoint(event, formattedMessage, message, content) {
             return;
         }
     }
+});
+
+const sbeFormat = /^\$SBECHWP:.+@-[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}$/g
+
+function sbe(message) {
+    if(sbeFormat.exec(message) == undefined) return undefined;
+
+    var waypointName = message.replace("$SBECHWP:", "").replace(/@-[0-9]{1,3},[0-9]{1,3},[0-9]{1,3}$/g, "")
+    var coordinates = message.replace("$SBECHWP:"+waypointName+"@-", "");
+
+    return {name: waypointName, coordinates: coordinates};
+}
+
+const cmFormat = /^%CRYSTALMAP=\[(\".+\"\d{1,3},\d{1,3},\d{1,3};)+]$/g
+
+function cm(message) {
+    if(cmFormat.exec(message) == undefined) return undefined;
+
+    var trimmed = message.replace(/^%CRYSTALMAP=\[/g, "").replace(/]$/g, "");
+    var textWaypoints = trimmed.split(/(\".+?\"\d{1,3},\d{1,3},\d{1,3};)/g).filter(waypoint => waypoint.length != 0);
+    var waypoints = [];
+
+    for(var waypoint of textWaypoints) {
+        console.log("-> "+waypoint+" // "+/\".+?\"(?=\d{1,3},\d{1,3},\d{1,3};)/g.exec(waypoint))
+        let waypointName = /\".+?\"(?=\d{1,3},\d{1,3},\d{1,3};)/g.exec(waypoint)[0];
+        let coordinates = /(?!\".+?\")\d{1,3},\d{1,3},\d{1,3}(?=;)/g.exec(waypoint)[0];
+
+        waypoints.push({name: waypointName, coordinates: coordinates});
+    }
+    return waypoints;
 }

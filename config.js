@@ -214,6 +214,14 @@ class Settings {
     createOdawaWaypoint = true;
 
     @SwitchProperty({
+        name: "Automatically Create Armadillo Clip Waypoint",
+        description: "Creates a temporary waypoint near the Jungle Temple to set up armadillo clips.",
+        category: "Waypoints",
+        subcategory: "Waypoint Creation"
+    })
+    createArmadilloClip = true;
+
+    @SwitchProperty({
         name: "Show Waypoints from Chat",
         description: "Automatically highlights waypoints in chat. Click it to create a waypoint.",
         category: "Waypoints",
@@ -862,7 +870,7 @@ class Settings {
         this.addDependency("Metal Detector Line Color", "Metal Detector Solver");
         this.addDependency("Metal Detector Beacon Color", "Metal Detector Solver");
 
-        this.setCategoryDescription("Map", "&5[--- &d&lCRYSTALMAP &r&5---]\n\n\n&b/cm [name] [coordinates]  &8- &7Creates a waypoint with a name or coordinates, if specified.\n&b/cm settings  &8- &7Opens settings.\n&b/cm route  &8- &7Opens a menu for creating automatic routes.\n&b/cm gui  &8- &7Opens a menu to change the location of the map.\n&b/cm remove &3<name>  &8- &7Removes a waypoint by name.\n&b/cm ping  &8- &7Updates your ping.\n\n\nFound a bug? Report it at:\n&3&nhttps://github.com/cognitivitydev/CrystalMap\n\n&7Version 1.1.0")
+        this.setCategoryDescription("Map", "&5[--- &d&lCRYSTALMAP &r&5---]\n\n\n&b/cm [name] [coordinates]  &8- &7Creates a waypoint with a name or coordinates (if specified).\n&b/cm settings  &8- &7Opens settings.\n&b/cm route  &8- &7Opens a menu for creating automatic routes.\n&b/cm gui  &8- &7Opens a menu to change the location of the map.\n&b/cm remove &3<name>  &8- &7Removes a waypoint by name.\n&b/cm ping  &8- &7Updates your ping.\n\n\nFound a bug? Report it at:\n&3&nhttps://github.com/cognitivitydev/CrystalMap\n\n&7Version 1.1.0")
         this.setCategoryDescription("Icons", "&c&lDISCLAIMER\n\n&7Icons using the \"FurfSky\" type are from the &5FurfSky Reborn &7texture pack.\n&7Their discord and the download to the texture pack can be found at &9&ndiscord.gg/fsr&7.\n\n\n\nUsing a scale other than 0.5, 1.0, or 2.0 may cause the icon to appear distorted.");
     }
 }

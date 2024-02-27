@@ -8,7 +8,7 @@
 
 import RenderLibV2 from "../../RenderLibV2";
 import Settings from "../config"
-import { calculateDistance } from "../hud/renderUtils";
+import { calculateDistance } from "../render/RenderUtils";
 
 const EnumParticleTypes = Java.type("net.minecraft.util.EnumParticleTypes");
 
@@ -31,17 +31,15 @@ register("chat", (event) => {
         spawningParticles = false;
     }
 });
-export function renderCompassLines() {
+register("renderWorld", () => {
     if(Settings.compassSolver != 1) return;
     if(particle1 && particle2) {
         let x = particle1.getX();
         let y = particle1.getY();
         let z = particle1.getZ();
-
         let x2 = particle2.getX();
         let y2 = particle2.getY();
         let z2 = particle2.getZ();
-
         const dx = x2 - x;
         const dy = y2 - y;
         const dz = z2 - z;
@@ -56,25 +54,21 @@ export function renderCompassLines() {
         let x = particle3.getX();
         let y = particle3.getY();
         let z = particle3.getZ();
-
         let x2 = particle4.getX();
         let y2 = particle4.getY();
         let z2 = particle4.getZ();
         const dx = x2 - x;
         const dy = y2 - y;
         const dz = z2 - z;
-    
-        // Calculate the distance between the two points
-        const distance = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    
-        // Extend the length by multiplying the differences by 100
+
         const extendedX2 = x + (dx * 100);
         const extendedY2 = y + (dy * 100);
         const extendedZ2 = z + (dz * 100);
-        
+
         RenderLibV2.drawLine(x, y, z, extendedX2, extendedY2, extendedZ2, 0, 0.5, 1, 0.8, true);
     }
-}
+});
+
 register("spawnParticle", (particle, type, event) => {
     if((Date.now() - lastCompass) > 8000) {
         return;

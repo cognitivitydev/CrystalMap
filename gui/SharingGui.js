@@ -24,7 +24,7 @@ import {
     WindowScreen,
     ScrollComponent,
 } from "../../Elementa";
-import { getWaypointFromId, shareWaypoints } from "../waypoints";
+import { getWaypointFromId, shareWaypoints } from "../WaypointManager";
 
 const Color = Java.type("java.awt.Color");
 

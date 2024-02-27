@@ -8,9 +8,9 @@
 
 import RenderLibV2 from "../../RenderLibV2"
 import renderBeaconBeam from "../../BeaconBeam"
-import { getArea, getCoordinates, getServerName, getWaypoint, inCrystalHollows, parseCoordinates } from "../waypoints";
+import { getArea, getCoordinates, getServerName, getWaypoint, inCrystalHollows, parseCoordinates } from "../WaypointManager";
 import Settings from "../config"
-import { calculateDistance } from "../hud/renderUtils";
+import { calculateDistance } from "../render/RenderUtils";
 
 const treasures = [
     "43,-20,-16",

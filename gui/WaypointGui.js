@@ -24,10 +24,10 @@ import {
     WindowScreen,
     ScrollComponent,
 } from "../../Elementa";
-import { createServerWaypoint, editWaypoint, getServer, getServerName, getWaypoint, getWaypoints, parseCoordinates, removeServerWaypoint } from "../waypoints";
+import { createServerWaypoint, editWaypoint, getServer, getServerName, getWaypoint, getWaypoints, parseCoordinates, removeServerWaypoint } from "../WaypointManager";
 
 const Color = Java.type("java.awt.Color");
-const URL = Java.type("java.net.URL")
+const File = Java.type("java.io.File");
 
 export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(Player.getX()) + "," + Math.round(Player.getY()) + "," + Math.round(Player.getZ())) {
     const window = new UIBlock()
@@ -110,7 +110,7 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
         .setWidth((6).pixels())
         .setChildOf(routeBlock);
 
-    const image = UIImage.Companion.ofURL(new URL("https://i.imgur.com/hlDUhZo.png"))
+    const image = UIImage.Companion.ofFile(new File("config/ChatTriggers/modules/CrystalMap/assets/map-normal.png"))
         .setX((5).percent())
         .setY(new CenterConstraint())
         .setWidth((256).pixels())
@@ -426,14 +426,14 @@ export function openWaypointGui(name = "New Waypoint", coordinates = Math.round(
     x = Math.min(Math.max(x, 202), 823);
     z = Math.min(Math.max(z, 202), 823);
     
-    const magmaImage = UIImage.Companion.ofURL(new URL("https://i.imgur.com/HafT7bu.png"))
+    const magmaImage = UIImage.Companion.ofFile(new File("config/ChatTriggers/modules/CrystalMap/assets/map-magma.png"))
         .setX((0).pixels())
         .setY((0).pixels())
         .setWidth(((textInput2.getText() ? textInput2.getText().split(",")[1] : parseCoordinates(coordinates).y) >= 64 ? 0 : 256).pixels())
         .setHeight(new AspectConstraint())
         .setChildOf(image);
 
-    const icon = UIImage.Companion.ofURL(new URL("https://i.imgur.com/ePP6A2C.png"))
+    const icon = UIImage.Companion.ofFile(new File("config/ChatTriggers/modules/CrystalMap/assets/generic-vanilla.png"))
         .setX(new SubtractiveConstraint(((x - 202) * (256 / 621)).pixels(), (8).pixels()))
         .setY(new SubtractiveConstraint(((z - 202) * (256 / 621)).pixels(), (8).pixels()))
         .setWidth((16).pixels())

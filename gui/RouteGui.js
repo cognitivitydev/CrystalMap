@@ -27,16 +27,16 @@ import {
     ScrollComponent,
     UIWrappedText,
 } from "../../Elementa";
-import { getCoordinates, parseCoordinates } from "../waypoints";
+import { getCoordinates, parseCoordinates } from "../WaypointManager";
 import Settings from "../config";
-import { PathfinderType, findPath } from "../pathfinder";
+import { PathfinderType, findPath } from "../Pathfinder";
+import { path } from "../Routes";
 
 const Color = Java.type("java.awt.Color");
 const Desktop = Java.type("java.awt.Desktop");
 const URI = Java.type("java.net.URI");
 
 var gemstones = undefined;
-export var path = [];
 var sorting = false;
 var sortingCount = 0;
 var sortingType = "";
@@ -97,12 +97,12 @@ export function openRouteGui() {
             .setChildOf(block);
         block.setColor(new Color(0, 0, 0, 220 / 255));
         new Thread(() => {
-            var file = FileLib.read("./config/ChatTriggers/modules/CrystalMap/gemstones.json");
+            var file = FileLib.read("./config/ChatTriggers/modules/CrystalMap/assets/gemstones.json");
             if(!file) {
                 downloadingText2.setText("Downloading repository...");
                 var repository = FileLib.getUrlContent(Settings.routeURL).replaceAll("\r", "");
                 gemstones = JSON.parse(repository);
-                FileLib.write("./config/ChatTriggers/modules/CrystalMap/gemstones.json", repository);
+                FileLib.write("./config/ChatTriggers/modules/CrystalMap/assets/gemstones.json", repository);
             } else {
                 downloadingText2.setText("Loading...");
                 gemstones = JSON.parse(file);
@@ -112,7 +112,7 @@ export function openRouteGui() {
                     var parsedRepository = JSON.parse(repository);
                     if(parsedRepository.version > gemstones.version) {
                         downloadingText2.setText("Updating...")
-                        FileLib.write("./config/ChatTriggers/modules/CrystalMap/gemstones.json", repository);
+                        FileLib.write("./config/ChatTriggers/modules/CrystalMap/assets/gemstones.json", repository);
                         gemstones = parsedRepository;
                     }
                 }

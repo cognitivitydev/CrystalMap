@@ -24,6 +24,7 @@ export function registerServer() {
         areas.push({server: serverName, regions: []});
     }
 }
+
 export function registerServerName(serverName) {
     if (!serverExists(serverName)) {
         waypoints.push({server: serverName, waypoints: []});

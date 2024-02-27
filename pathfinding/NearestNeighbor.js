@@ -6,7 +6,7 @@
 /// <reference types="../../CTAutocomplete" />
 /// <reference lib="es2015" />
 
-import { calculateWeightedDistance } from "../hud/renderUtils";
+import { calculateWeightedDistance } from "../render/RenderUtils";
 
 function findNearestNeighbor(currentPoint, unvisitedPoints) {
     let nearestNeighbor = null;
