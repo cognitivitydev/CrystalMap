@@ -10,10 +10,13 @@ import Settings from "./config";
 import "./solvers/CompassSolver";
 import "./solvers/DivanSolver";
 import "./chat/ChatSharing";
-import "./chat/ChatWaypoints";
+import "./chat/ChatCoordinates";
+import "./chat/ClientChat"
+import "./chat/ShareProtection";
 import "./waypoints/EntityWaypoints";
 import "./render/MapRenderer";
 import "./render/RenderUtils";
+import "./render/Status";
 import "./waypoints/WaypointRenderer";
 import "./waypoints/EntityWaypoints";
 import "./WaypointManager";

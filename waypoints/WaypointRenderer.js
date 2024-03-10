@@ -15,6 +15,7 @@ const nucleusEntrances = ["474,116,552","474,116,474","552,116,474","552,116,552
 var dilloClip;
 
 register("renderWorld", () => {
+    if(!inCrystalHollows()) return;
     registerServer();
     var area = getArea();
     if(Settings.createWaypoints && /^(Fairy Grotto)|(Jungle Temple)|(Mines of Divan)|(Lost Precursor City)|(Goblin Queen's Den)|(Khazad-dûm)$/g.exec(area)) {
@@ -50,7 +51,7 @@ register("renderWorld", () => {
         }
     }
     if(!Settings.waypoint) return;
-    if(Settings.nucleusWaypoints && inCrystalHollows() && !getArea().equals("Crystal Nucleus")) {
+    if(Settings.nucleusWaypoints && !getArea().equals("Crystal Nucleus")) {
         var closestWaypoint = undefined;
         var waypointDistance = Infinity;
         for(var entrance of nucleusEntrances) {
@@ -71,7 +72,8 @@ register("renderWorld", () => {
         renderBeaconBeam(x, 0, z, color.getRed() / 255, color.getGreen() / 255, color.getBlue() / 255, Math.min(0.8, Math.max(0, 0.05*Math.pow(dist, 2))*(color.getAlpha() / 255)), true);
         Tessellator.drawString("§d§lCrystal Nucleus §e("+dist+"m)", x + 0.5, y + 1.5, z + 0.5, 0xFFFFFF, true, 0.75, true);
     }
-    getServer(getServerName()).waypoints.forEach((waypoint) => {
+    var server = getServer(getServerName());
+    server.waypoints.forEach((waypoint) => {
         var coordinates = parseCoordinates(waypoint.location);
         var color = Settings.waypointColor;
         var x = parseInt(coordinates.x)-1;
@@ -83,3 +85,13 @@ register("renderWorld", () => {
         Tessellator.drawString("§e"+waypoint.name+" §c("+dist+"m)", x + 0.5, y + 1.5, z + 0.5, 0xFFFFFF, true, 0.75, true);
     });
 });
+
+// [123] lives on
+register("renderPlayerList", () => {
+    World.getAllPlayers().forEach(player => {
+        
+        if(player.getDisplayName().getText().endsWith("§7[123]")) {
+            player.setTabDisplayName(new TextComponent(player.getDisplayName().getText().replace("§7[123]", "§7[§a1§e2§c3§7]")))
+        }
+    })
+})

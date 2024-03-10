@@ -17,6 +17,7 @@ export function getWaypoints() {
 
 export function registerServer() {
     var serverName = getServerName();
+    if(!serverName) return;
     if (!serverExists(serverName)) {
         waypoints.push({server: serverName, waypoints: []});
     }
@@ -248,8 +249,14 @@ export function getWaypoint(serverName, name, ...extras) {
     return foundWaypoint;
 }
 export function getServerName() {
-    var lines = Scoreboard.getLines();
-    var server = ChatLib.removeFormatting(lines[lines.length - 1]).replace(/[0-9]{2}\/[0-9]{2}\/[0-9]{2}\s*/g, "").replace(/[^A-Za-z0-9]/g, "");
+    var lines = TabList.getNames();
+    var server = undefined;
+    lines.forEach(formatted => {
+        let line = ChatLib.removeFormatting(formatted);
+        if(line.startsWith(" Server: ")) {
+            server = line.replace(" Server: ", "");
+        }
+    });
     return server;
 }
 export function getArea() {

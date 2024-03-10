@@ -10,7 +10,7 @@ import { @Vigilant, @SwitchProperty, @DecimalSliderProperty, @SelectorProperty, 
 
 @Vigilant("CrystalMap", "Settings", {
     getCategoryComparator: () => (a, b) => {
-        const categories = ["Map", "Waypoints", "Icons", "Solvers"];
+        const categories = ["Map", "Waypoints", "Icons", "Solvers", "Status HUD"];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -48,6 +48,26 @@ class Settings {
         hidden: true
     })
     mapY = 0;
+
+    // HIDDEN
+    @DecimalSliderProperty({
+        name: "Status X Location",
+        category: "General",
+        min: 0,
+        max: 1,
+        hidden: true
+    })
+    statusX = 0.1386;
+
+    // HIDDEN
+    @DecimalSliderProperty({
+        name: "Status Y Location",
+        category: "General",
+        min: 0,
+        max: 1,
+        hidden: true
+    })
+    statusY = 0.00926;
 
     @SwitchProperty({
         name: "Minimap",
@@ -147,6 +167,46 @@ class Settings {
         subcategory: "Developer Options"
     })
     metalDetectorDebug = false;
+
+    // REQUIRES "Enable Developer Options"
+    @CheckboxProperty({
+        name: "Jade Crystal",
+        category: "Map",
+        subcategory: "Developer Options"
+    })
+    jadeCrystal = false;
+
+    // REQUIRES "Enable Developer Options"
+    @CheckboxProperty({
+        name: "Amber Crystal",
+        category: "Map",
+        subcategory: "Developer Options"
+    })
+    amberCrystal = false;
+
+    // REQUIRES "Enable Developer Options"
+    @CheckboxProperty({
+        name: "Amethyst Crystal",
+        category: "Map",
+        subcategory: "Developer Options"
+    })
+    amethystCrystal = false;
+
+    // REQUIRES "Enable Developer Options"
+    @CheckboxProperty({
+        name: "Sapphire Crystal",
+        category: "Map",
+        subcategory: "Developer Options"
+    })
+    sapphireCrystal = false;
+
+    // REQUIRES "Enable Developer Options"
+    @CheckboxProperty({
+        name: "Topaz Crystal",
+        category: "Map",
+        subcategory: "Developer Options"
+    })
+    topazCrystal = false;
 
     @SwitchProperty({
         name: "Beacon Waypoints",
@@ -801,11 +861,23 @@ class Settings {
     })
     compassSolver = 1;
 
+    @SwitchProperty({
+        name: "Status HUD",
+        description: "Shows a list of useful information in the Crystal Holows. Customizability coming soon(tm).",
+        category: "Status HUD",
+    })
+    status = true;
+
     constructor() {
         this.initialize(this);
 
         this.addDependency("Route Repository", "&cEnable Developer Options")
         this.addDependency("Metal Detector Debug", "&cEnable Developer Options")
+        this.addDependency("Jade Crystal", "&cEnable Developer Options")
+        this.addDependency("Amber Crystal", "&cEnable Developer Options")
+        this.addDependency("Amethyst Crystal", "&cEnable Developer Options")
+        this.addDependency("Sapphire Crystal", "&cEnable Developer Options")
+        this.addDependency("Topaz Crystal", "&cEnable Developer Options")
 
         this.addDependency("Only Show Waypoints in Crystal Hollows", "Show Waypoints from Chat")
         this.addDependency("Automatically Parse Waypoints from Chat", "Show Waypoints from Chat")
@@ -870,7 +942,7 @@ class Settings {
         this.addDependency("Metal Detector Line Color", "Metal Detector Solver");
         this.addDependency("Metal Detector Beacon Color", "Metal Detector Solver");
 
-        this.setCategoryDescription("Map", "&5[--- &d&lCRYSTALMAP &r&5---]\n\n\n&b/cm [name] [coordinates]  &8- &7Creates a waypoint with a name or coordinates (if specified).\n&b/cm settings  &8- &7Opens settings.\n&b/cm route  &8- &7Opens a menu for creating automatic routes.\n&b/cm gui  &8- &7Opens a menu to change the location of the map.\n&b/cm remove &3<name>  &8- &7Removes a waypoint by name.\n&b/cm ping  &8- &7Updates your ping.\n\n\nFound a bug? Report it at:\n&3&nhttps://github.com/cognitivitydev/CrystalMap\n\n&7Version 1.1.0")
+        this.setCategoryDescription("Map", "&5[--- &d&lCRYSTALMAP &r&5---]\n\n\n&b/cm [name] [coordinates]  &8- &7Creates a waypoint with a name or coordinates (if specified).\n&b/cm settings  &8- &7Opens settings.\n&b/cm route  &8- &7Opens a menu for creating automatic routes.\n&b/cm gui  &8- &7Opens a menu to change the location of the map.\n&b/cm remove &3<name>  &8- &7Removes a waypoint by name.\n&b/cm ping  &8- &7Updates your ping.\n\n\nFound a bug? Report it at:\n&3&nhttps://github.com/cognitivitydev/CrystalMap\n\n&7Version 1.1.1")
         this.setCategoryDescription("Icons", "&c&lDISCLAIMER\n\n&7Icons using the \"FurfSky\" type are from the &5FurfSky Reborn &7texture pack.\n&7Their discord and the download to the texture pack can be found at &9&ndiscord.gg/fsr&7.\n\n\n\nUsing a scale other than 0.5, 1.0, or 2.0 may cause the icon to appear distorted.");
     }
 }

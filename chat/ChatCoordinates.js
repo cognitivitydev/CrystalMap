@@ -48,14 +48,15 @@ register("chat", (event) => {
         }
         return;
     }
-    if(/(?!(^|\s))[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, ){1,2}[0-9]{1,3}(?=\s|$)/gi.exec(content)) {
+    if(/(?!(^|\s))([0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, ){1,2}[0-9]{1,3})|(x:? ?\d{1,3}(,| |, )y:? ?\d{1,3}(,| |, )z:? ?\d{1,3})(?=\s|$)/gi.exec(content)) {
         var newMessage = new Message(formattedMessage);
-        var coords = content.match(new RegExp(areas + ":? [0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}(?=(\s|$|,? ))", "gi"));
+        var coords = content.match(new RegExp(areas + ":? (([0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3})|(x:? ?\\d{1,3}(,| |, )y:? ?\\d{1,3}(,| |, )z:? ?\\d{1,3}))(?=(\\s|$|,? ))", "gi"));
         if(coords) {
             for(var coord of coords) {
-                var coordinates = /[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}(?=\s|$)/gi.exec(coord)[0];
+                var coordinates = /(([0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3})|(x:? ?\d{1,3}(,| |, )y:? ?\d{1,3}(,| |, )z:? ?\d{1,3}))(?=\s|$)/gi.exec(coord)[0];
                 var waypointName = coord.replace(coordinates, "").replace(":", "").trim();
                 var waypoint = "&5&n"+waypointName+"&d&n "+coordinates;
+                coordinates = coordinates.replace(/x:? ?/gi, "").replace(/(,| |, )[yz]:? ?/gi, ",");
                 cancel(event);
                 newMessage = new Message(
                     newMessage.getFormattedText().split(coord)[0],
@@ -72,12 +73,13 @@ register("chat", (event) => {
             }
         }
         newMessage = new Message(formattedMessage);
-        coords = content.match(new RegExp("[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}:? " + areas, "gi"));
+        coords = content.match(new RegExp("(([0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3})|(x:? ?\\d{1,3}(,| |, )y:? ?\\d{1,3}(,| |, )z:? ?\\d{1,3})):? " + areas, "gi"));
         if(coords) {
             for(var coord of coords) {
-                var coordinates = /[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3}/g.exec(coords[0])[0];
+                var coordinates = /(([0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3})|(x:? ?\d{1,3}(,| |, )y:? ?\d{1,3}(,| |, )z:? ?\d{1,3}))(?=\s|$)/gi.exec(coord)[0];
                 var waypointName = coords[0].replace(coordinates, "").replace(":", "").trim();
                 var waypoint = "&d&n"+coordinates+" &5&n"+waypointName;
+                coordinates = coordinates.replace(/x:? ?/gi, "").replace(/(,| |, )[yz]:? ?/gi, ",");
                 cancel(event);
                 newMessage = new Message(
                     newMessage.getFormattedText().split(coord)[0],
@@ -93,13 +95,14 @@ register("chat", (event) => {
                 return;
             }
         }
-        coords = /(\s|^)[0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, ){1,2}[0-9]{1,3}(?=\s|$)/gi.exec(content);
+        coords = /(\s|^)(([0-9]{1,3}(,| |, )[0-9]{1,3}(,| |, )[0-9]{1,3})|(x:? ?\d{1,3}(,| |, )y:? ?\d{1,3}(,| |, )z:? ?\d{1,3}))(?=\s|$)/gi.exec(content);
         if(coords) {
             coords = coords[0].trim();
+            var coordinates = coords.replace(/x:? ?/gi, "").replace(/(,| |, )[yz]:? ?/gi, ",").replace(/(, |,| )/gi, ",");
             cancel(event);
             ChatLib.chat(new Message(
                 formattedMessage.split(coords)[0],
-                new TextComponent("&d&n"+coords).setClick("run_command", "/crystalmap waypoint "+coords.replace(/(, |,| )/g, ",")),
+                new TextComponent("&d&n"+coords).setClick("run_command", "/crystalmap waypoint "+coordinates),
                 formattedMessage.split(coords)[1]
             ));
             return;

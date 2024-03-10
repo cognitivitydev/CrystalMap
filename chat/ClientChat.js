@@ -6,8 +6,42 @@
 /// <reference types="../../CTAutocomplete" />
 /// <reference lib="es2015" />
 
+import { getFormattedChat } from "../../ClientsideChat";
+import { createWaypoint } from "../WaypointManager";
+import Settings from "../config";
+
 const Loader = Java.type("net.minecraftforge.fml.common.Loader");
 const hasNEU = Loader.isModLoaded("notenoughupdates");
+
+const arraysEqual = (a, b) => a.every((e, i) => e === b[i]);
+const arrayDifference = (newArray, oldArray) => {
+    if (oldArray.length === 0) {
+        return newArray;
+    }
+    const temp = [];
+    const offset = newArray.length - oldArray.length;
+    for (let i = newArray.length - 1; i >= 0; i--) {
+        let newElement = newArray[i];
+        let oldElement = oldArray[i - offset];
+    
+        if (oldElement !== newElement) {
+            temp.unshift(newElement);
+        }
+    }
+    return temp;
+};
+
+const registerClientSideChat = (callback) => {
+    let cachedStack = getFormattedChat();
+    register("tick", () => {
+        const currentStack = getFormattedChat();
+  
+        if (!arraysEqual(cachedStack, currentStack)) {
+            callback(...arrayDifference(currentStack, cachedStack));
+            cachedStack = currentStack;
+        }
+    });
+};
 
 registerClientSideChat((...messages) => {
     if(!Settings.showChatWaypoints) return;
@@ -35,32 +69,3 @@ registerClientSideChat((...messages) => {
         }
     });
 });
-
-const registerClientSideChat = (callback) => {
-    let cachedStack = getFormattedChat();
-    register("tick", () => {
-        const currentStack = getFormattedChat();
-  
-        if (!arraysEqual(cachedStack, currentStack)) {
-            callback(...arrayDifference(currentStack, cachedStack));
-            cachedStack = currentStack;
-        }
-    });
-};
-const arraysEqual = (a, b) => a.every((e, i) => e === b[i]);
-const arrayDifference = (newArray, oldArray) => {
-    if (oldArray.length === 0) {
-        return newArray;
-    }
-    const temp = [];
-    const offset = newArray.length - oldArray.length;
-    for (let i = newArray.length - 1; i >= 0; i--) {
-        let newElement = newArray[i];
-        let oldElement = oldArray[i - offset];
-    
-        if (oldElement !== newElement) {
-            temp.unshift(newElement);
-        }
-    }
-    return temp;
-};

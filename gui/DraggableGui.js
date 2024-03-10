@@ -12,55 +12,141 @@ import {
     Animations, 
     ConstantColorConstraint,
     WindowScreen,
+    UIText,
+    CenterConstraint,
+    SubtractiveConstraint,
+    AdditiveConstraint
 } from "../../Elementa";
 import Settings from "../config";
 
 const Color = Java.type("java.awt.Color");
-const dragOffset = { x: 0, y: 0 };
+const mapOffset = { x: 0, y: 0 };
+const statusOffset = { x: 0, y: 0 };
+var draggingMap = false;
+var draggingStatus = false;
 
 export function openDraggableGui() {
-    var box = new UIBlock(new Color(49/255, 175/255, 236/255, 150/255))
+    var mapBox = new UIBlock(new Color(49/255, 175/255, 236/255, 50/255))
         .setX((Settings.mapX * Renderer.screen.getWidth()).pixels())
         .setY((Settings.mapY * Renderer.screen.getHeight()).pixels())
         .setWidth((128 * Settings.scale).pixels())
         .setHeight((128 * Settings.scale).pixels())
         .onMouseClick((comp, event) => {
-            isDragging = true;
-            dragOffset.x = event.absoluteX;
-            dragOffset.y = event.absoluteY;
+            draggingMap = true;
+            mapOffset.x = event.absoluteX;
+            mapOffset.y = event.absoluteY;
         })
         .onMouseRelease(() => {
-            isDragging = false;
+            draggingMap = false;
         })
         .onMouseDrag((comp, mx, my) => {
-            if (!isDragging) return;
+            if (!draggingMap) return;
             const absoluteX = mx + comp.getLeft();
             const absoluteY = my + comp.getTop();
-            const dx = absoluteX - dragOffset.x;
-            const dy = absoluteY - dragOffset.y;
-            dragOffset.x = absoluteX;
-            dragOffset.y = absoluteY;
-            const newX = box.getLeft() + dx;
+            const dx = absoluteX - mapOffset.x;
+            const dy = absoluteY - mapOffset.y;
+            mapOffset.x = absoluteX;
+            mapOffset.y = absoluteY;
+            const newX = mapBox.getLeft() + dx;
             Settings.mapX = newX / Renderer.screen.getWidth();
-            const newY = box.getTop() + dy;
+            const newY = mapBox.getTop() + dy;
             Settings.mapY = newY / Renderer.screen.getHeight();
-            box.setX(newX.pixels());
-            box.setY(newY.pixels());
+            mapBox.setX(newX.pixels());
+            mapTextX.setText((newX*2)+" px");
+            mapTextY.setText((newY*2)+" px");
+            mapBox.setY(newY.pixels());
         })
         .onMouseEnter((comp) => {
             animate(comp, (animation) => {
-                animation.setColorAnimation(Animations.OUT_EXP, 0.3, new ConstantColorConstraint(new Color(164/255, 82/255, 227/255, 90/255)));
+                animation.setColorAnimation(Animations.OUT_EXP, 0.3, new ConstantColorConstraint(new Color(164/255, 82/255, 227/255, 50/255)));
             });
         })
         .onMouseLeave((comp) => {
             animate(comp, (anim) => {
-                anim.setColorAnimation(Animations.OUT_EXP, 0.3, new ConstantColorConstraint(new Color(49/255, 175/255, 236/255, 150/255)));
+                anim.setColorAnimation(Animations.OUT_EXP, 0.3, new ConstantColorConstraint(new Color(49/255, 175/255, 236/255, 50/255)));
             });
         });
-        
+    
+    new UIText("Crystal Hollows Map")
+        .setX(new CenterConstraint())
+        .setY((10).percent())
+        .setColor(Color.MAGENTA)
+        .setChildOf(mapBox);
+    
+    var mapTextX = new UIText(Math.round(Settings.mapX * Renderer.screen.getWidth())*2+" px")
+        .setX(new CenterConstraint())
+        .setY(new SubtractiveConstraint(new CenterConstraint(), (5).pixels()))
+        .setColor(Color.ORANGE)
+        .setChildOf(mapBox);
+    var mapTextY = new UIText(Math.round(Settings.mapY * Renderer.screen.getHeight())*2+" px")
+        .setX(new CenterConstraint())
+        .setY(new AdditiveConstraint(new CenterConstraint(), (5).pixels()))
+        .setColor(Color.ORANGE)
+        .setChildOf(mapBox);
+
+
+    var statusBox = new UIBlock(new Color(49/255, 175/255, 236/255, 50/255))
+        .setX((Settings.statusX * Renderer.screen.getWidth()).pixels())
+        .setY((Settings.statusY * Renderer.screen.getHeight()).pixels())
+        .setWidth((192).pixels())
+        .setHeight((118).pixels())
+        .onMouseClick((comp, event) => {
+            draggingStatus = true;
+            statusOffset.x = event.absoluteX;
+            statusOffset.y = event.absoluteY;
+        })
+        .onMouseRelease(() => {
+            draggingStatus = false;
+        })
+        .onMouseDrag((comp, mx, my) => {
+            if (!draggingStatus) return;
+            const absoluteX = mx + comp.getLeft();
+            const absoluteY = my + comp.getTop();
+            const dx = absoluteX - statusOffset.x;
+            const dy = absoluteY - statusOffset.y;
+            statusOffset.x = absoluteX;
+            statusOffset.y = absoluteY;
+            const newX = statusBox.getLeft() + dx;
+            Settings.statusX = newX / Renderer.screen.getWidth();
+            const newY = statusBox.getTop() + dy;
+            Settings.statusY = newY / Renderer.screen.getHeight();
+            statusBox.setX(newX.pixels());
+            statusTextX.setText((newX*2)+" px");
+            statusTextY.setText((newY*2)+" px");
+            statusBox.setY(newY.pixels());
+        })
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.3, new ConstantColorConstraint(new Color(164/255, 82/255, 227/255, 50/255)));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.OUT_EXP, 0.3, new ConstantColorConstraint(new Color(49/255, 175/255, 236/255, 50/255)));
+            });
+        });
+    
+    new UIText("Status HUD")
+        .setX(new CenterConstraint())
+        .setY((10).percent())
+        .setColor(Color.MAGENTA)
+        .setChildOf(statusBox);
+    
+    var statusTextX = new UIText(Math.round(Settings.statusX * Renderer.screen.getWidth())*2+" px")
+        .setX(new CenterConstraint())
+        .setY(new SubtractiveConstraint(new CenterConstraint(), (5).pixels()))
+        .setColor(Color.ORANGE)
+        .setChildOf(statusBox);
+    var statusTextY = new UIText(Math.round(Settings.statusY * Renderer.screen.getHeight())*2+" px")
+        .setX(new CenterConstraint())
+        .setY(new AdditiveConstraint(new CenterConstraint(), (5).pixels()))
+        .setColor(Color.ORANGE)
+        .setChildOf(statusBox);
+
     const gui = new JavaAdapter(WindowScreen, {
         init() {
-            box.setChildOf(this.getWindow());
+            mapBox.setChildOf(this.getWindow());
+            statusBox.setChildOf(this.getWindow());
         }
     });
     gui.init();
