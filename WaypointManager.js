@@ -269,8 +269,15 @@ export function getArea() {
     return area;
 }
 export function inCrystalHollows() {
-    return new RegExp("^(Goblin Holdout)|(Precursor Remnants)|(Mithril Deposits)|(Jungle)|(Magma Fields)" +
-        "|(Fairy Grotto)|(Jungle Temple)|(Mines of Divan)|(Lost Precursor City)|(Goblin Queen's Den)|(Khazad-dûm)|(Crystal Nucleus)$").exec(getArea())
+    var lines = TabList.getNames();
+    var inHollows = false;
+    lines.forEach(formatted => {
+        let line = ChatLib.removeFormatting(formatted);
+        if(line.equals("Area: Crystal Hollows")) {
+            inHollows = true;
+        }
+    });
+    return inHollows;
 }
 export function parseCoordinates(coordinates) {
     let array = coordinates.split(",");
