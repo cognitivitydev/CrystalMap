@@ -11,14 +11,18 @@ import { openRouteGui } from "./gui/RouteGui";
 import { openSharingGui } from "./gui/SharingGui";
 import { openWaypointGui } from "./gui/WaypointGui";
 import { refreshPing } from "./render/RenderUtils";
-import { inCrystalHollows, removeWaypoint } from "./WaypointManager";
+import { inCrystalHollows, inDwarvenMines, removeWaypoint } from "./WaypointManager";
 import Settings from "./config";
 
 register("command", (...args) => {
 
     if(!args || !args[0]) {
-        if(!inCrystalHollows()) {
-            ChatLib.chat("&cIt seems like you aren't in the Crystal Hollows! Type &n/crystalmap settings&c to open settings.");
+        if(!inCrystalHollows() && !inDwarvenMines()) {
+            ChatLib.chat("&cIt seems like you aren't in the Crystal Hollows or Dwarven Mines! Type &n/crystalmap settings&c to open settings.");
+            return;
+        }
+        if(inDwarvenMines()) {
+            Settings.openGUI();
             return;
         }
         openWaypointGui();
@@ -33,6 +37,10 @@ register("command", (...args) => {
         return;
     }
     if(args.length == 1 && args[0].equals("route")) {
+        if(!inCrystalHollows()) {
+            ChatLib.chat("&cIt seems like you aren't in the Crystal Hollows! Type &n/crystalmap settings&c to open settings.");
+            return;
+        }
         openRouteGui();
         return;
     }

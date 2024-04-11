@@ -11,13 +11,15 @@ import "./solvers/CompassSolver";
 import "./solvers/DivanSolver";
 import "./chat/ChatSharing";
 import "./chat/ChatCoordinates";
-import "./chat/ClientChat"
+import "./chat/ClientChat";
+import "./chat/MineshaftAlert";
 import "./chat/ShareProtection";
 import "./waypoints/EntityWaypoints";
 import "./render/MapRenderer";
 import "./render/RenderUtils";
 import "./render/Status";
 import "./waypoints/WaypointRenderer";
+import "./waypoints/GlaciteCommissions";
 import "./waypoints/EntityWaypoints";
 import "./WaypointManager";
 import "./CrystalMapCommand";

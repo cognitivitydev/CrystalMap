@@ -10,7 +10,7 @@ import { @Vigilant, @SwitchProperty, @DecimalSliderProperty, @SelectorProperty, 
 
 @Vigilant("CrystalMap", "Settings", {
     getCategoryComparator: () => (a, b) => {
-        const categories = ["Map", "Waypoints", "Icons", "Solvers", "Status HUD"];
+        const categories = ["Map", "Glacite Tunnels", "Waypoints", "Icons", "Solvers", "Status HUD"];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
@@ -207,6 +207,49 @@ class Settings {
         subcategory: "Developer Options"
     })
     topazCrystal = false;
+
+    @SwitchProperty({
+        name: "Show Commission Waypoints",
+        description: "Shows waypoints to all gemstones you have a commission for.",
+        category: "Glacite Tunnels",
+        subcategory: "Waypoints"
+    })
+    glaciteCommissions = true;
+
+    @SwitchProperty({
+        name: "Mineshaft Warning",
+        description: "Alerts you when you discover a mineshaft.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft"
+    })
+    mineshaftWarning = true;
+
+    @SwitchProperty({
+        name: "Send Mineshaft in Chat",
+        description: "Send a customizable message in chat when you find a mineshaft.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft"
+    })
+    mineshaftChat = true;
+
+    // REQUIRES "Send Mineshaft in Chat"
+    @SelectorProperty({
+        name: "Mineshaft Chat Channel",
+        description: "Choose a channel to send mineshaft discoveries in.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+        options: ["All Chat", "Party Chat", "Co-op Chat", "Guild Chat"]
+    })
+    mineshaftChatChannel = 1;
+
+    // REQUIRES "Send Mineshaft in Chat"
+    @ParagraphProperty({
+        name: "Mineshaft Chat Message",
+        description: "Edit the message sent in chat when you discover a mineshaft.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftChatMessage = "Mineshaft!";
 
     @SwitchProperty({
         name: "Beacon Waypoints",
@@ -871,27 +914,30 @@ class Settings {
     constructor() {
         this.initialize(this);
 
-        this.addDependency("Route Repository", "&cEnable Developer Options")
-        this.addDependency("Metal Detector Debug", "&cEnable Developer Options")
-        this.addDependency("Jade Crystal", "&cEnable Developer Options")
-        this.addDependency("Amber Crystal", "&cEnable Developer Options")
-        this.addDependency("Amethyst Crystal", "&cEnable Developer Options")
-        this.addDependency("Sapphire Crystal", "&cEnable Developer Options")
-        this.addDependency("Topaz Crystal", "&cEnable Developer Options")
+        this.addDependency("Route Repository", "&cEnable Developer Options");
+        this.addDependency("Metal Detector Debug", "&cEnable Developer Options");
+        this.addDependency("Jade Crystal", "&cEnable Developer Options");
+        this.addDependency("Amber Crystal", "&cEnable Developer Options");
+        this.addDependency("Amethyst Crystal", "&cEnable Developer Options");
+        this.addDependency("Sapphire Crystal", "&cEnable Developer Options");
+        this.addDependency("Topaz Crystal", "&cEnable Developer Options");
 
-        this.addDependency("Only Show Waypoints in Crystal Hollows", "Show Waypoints from Chat")
-        this.addDependency("Automatically Parse Waypoints from Chat", "Show Waypoints from Chat")
+        this.addDependency("Mineshaft Chat Channel", "Send Mineshaft in Chat");
+        this.addDependency("Mineshaft Chat Message", "Send Mineshaft in Chat");
 
-        this.addDependency("Show Requests in All Chat", "Show Coordinate Requests")
-        this.addDependency("Show Requests in Party Chat", "Show Coordinate Requests")
-        this.addDependency("Show Requests in Co-op Chat", "Show Coordinate Requests")
+        this.addDependency("Only Show Waypoints in Crystal Hollows", "Show Waypoints from Chat");
+        this.addDependency("Automatically Parse Waypoints from Chat", "Show Waypoints from Chat");
 
-        this.addDependency("Center Icon With Area's Box", "Show Waypoint's Area")
+        this.addDependency("Show Requests in All Chat", "Show Coordinate Requests");
+        this.addDependency("Show Requests in Party Chat", "Show Coordinate Requests");
+        this.addDependency("Show Requests in Co-op Chat", "Show Coordinate Requests");
 
-        this.addDependency("Show Closest Nucleus Entrance", "Show Closest Nucleus Entrance")
+        this.addDependency("Center Icon With Area's Box", "Show Waypoint's Area");
 
-        this.addDependency("Automatically Create King Yolkar Waypoint", "Automatically Create Waypoints")
-        this.addDependency("Automatically Create Odawa Waypoint", "Automatically Create Waypoints")
+        this.addDependency("Show Closest Nucleus Entrance", "Show Closest Nucleus Entrance");
+
+        this.addDependency("Automatically Create King Yolkar Waypoint", "Automatically Create Waypoints");
+        this.addDependency("Automatically Create Odawa Waypoint", "Automatically Create Waypoints");
 
         this.addDependency("Player Icon Type", "Player Icon");
         this.addDependency("Player Icon Size", "Player Icon");

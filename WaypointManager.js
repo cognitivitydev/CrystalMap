@@ -279,6 +279,21 @@ export function inCrystalHollows() {
     });
     return inHollows;
 }
+export function inDwarvenMines() {
+    var lines = TabList.getNames();
+    var inMines = false;
+    lines.forEach(formatted => {
+        let line = ChatLib.removeFormatting(formatted);
+        if(line.equals("Area: Dwarven Mines")) {
+            inMines = true;
+        }
+    });
+    return inMines;
+}
+export function inGlaciteTunnels() {
+    return /(Dwarven Base Camp)|(Glacite (Lake|Tunnels))/g.exec(getArea())
+}
+
 export function parseCoordinates(coordinates) {
     let array = coordinates.split(",");
     var x = array[0];
