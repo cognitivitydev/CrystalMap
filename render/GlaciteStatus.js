@@ -1,0 +1,269 @@
+/* 
+ * This module can be found at https://github.com/cognitivitydev/CrystalMap/.
+ * You can report any issues or add suggestions there.
+ */
+
+/// <reference types="../../CTAutocomplete" />
+/// <reference lib="es2015" />
+
+import {
+    UIContainer,
+    UIBlock,
+    FillConstraint,
+    UIRoundedRectangle,
+    CenterConstraint,
+    SubtractiveConstraint,
+    UIText,
+    AdditiveConstraint,
+    SiblingConstraint,
+    CramSiblingConstraint,
+    animate,
+    Animations, 
+    ConstantColorConstraint,
+    UITextInput,
+    UIImage,
+    AspectConstraint,
+    WindowScreen,
+    ScrollComponent,
+    UIWrappedText,
+    Window,
+    ChildBasedSizeConstraint,
+    ChildBasedMaxSizeConstraint
+} from "../../Elementa";
+import { inGlaciteTunnels } from "../WaypointManager";
+import Settings from "../config";
+
+const Color = Java.type("java.awt.Color");
+const SimpleDateFormat = Java.type("java.text.SimpleDateFormat");
+const JavaDate = Java.type("java.util.Date");
+const TimeZone = Java.type("java.util.TimeZone");
+const formatGMT = new SimpleDateFormat("HH:mm:ss");
+formatGMT.setTimeZone(TimeZone.getTimeZone("GMT"));
+const shortFormatGMT = new SimpleDateFormat("mm:ss");
+shortFormatGMT.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+
+const start = Date.now();
+var mineshaftCount = 0;
+var lastMineshaft = 0;
+
+var fuel = {
+    remaining: -1,
+    max: 0
+}
+
+var powders = {
+    gemstone: "???",
+    glacite: "???"
+}
+var powderHistory = {
+    gemstone: undefined,
+    glacite: undefined
+}
+var lastPowder = {
+    gemstone: 0,
+    glacite: 0
+}
+
+var commissionHistory = [];
+
+var coldUpdates = [];
+var cold = Infinity;
+var updateRate = 0;
+var untilDeath = 0;
+
+register("renderOverlay", () => {
+    if(!inGlaciteTunnels(true)) return;
+    if(!Settings.status) return;
+
+    var x = Settings.statusX * Renderer.screen.getWidth();
+    var y = Settings.statusY * Renderer.screen.getHeight();
+    const hud = new Window();
+
+    var rectangle = new UIRoundedRectangle(3)
+        .setColor(new Color(0, 0, 0, 180 / 255))
+        .setX(x.pixels())
+        .setY(y.pixels())
+        .setWidth(new AdditiveConstraint(new ChildBasedMaxSizeConstraint(), (10).pixels()))
+        .setHeight(new AdditiveConstraint(new ChildBasedSizeConstraint(), (10).pixels()))
+        .setChildOf(hud);
+
+    var time;
+    if(coldUpdates.length == 0) time = "§cN/A";
+    else if(coldUpdates.length < 3) time = "§8Calculating...";
+    else if(untilDeath-Date.now() < 15000) time = "§c§l"+toClock(untilDeath-Date.now());
+    else time = "§9"+toClock(untilDeath-Date.now());
+
+    new UIText("§7Time Until Death: "+time)
+        .setX((5).pixels())
+        .setY((5).pixels())
+        .setChildOf(rectangle);
+        
+    new UIText("§7Commisions per Hour: §2"+Math.round(commissionHistory.length == 0 ? "0" : commissionHistory.length/(Date.now()-commissionHistory[0])*3600000))
+        .setX((5).pixels())
+        .setY(new SiblingConstraint(2))
+        .setChildOf(rectangle);
+    
+    new UIText("§7Gemstone Powder: §d"+powders.gemstone+" ᠅")
+        .setX((5).pixels())
+        .setY(new SiblingConstraint(2))
+        .setChildOf(rectangle);
+
+    new UIText("§7Glacite Powder: §b"+powders.glacite+" ᠅")
+        .setX((5).pixels())
+        .setY(new SiblingConstraint(2))
+        .setChildOf(rectangle);
+
+    new UIText("§7Gemstone Powder per Hour: §d"+calculateRate("gemstone")+" ᠅")
+        .setX((5).pixels())
+        .setY(new SiblingConstraint(2))
+        .setChildOf(rectangle);
+
+    new UIText("§7Glacite Powder per Hour: §b"+calculateRate("glacite")+" ᠅")
+        .setX((5).pixels())
+        .setY(new SiblingConstraint(2))
+        .setChildOf(rectangle);
+
+    new UIText("§7Session Mineshafts: §3"+mineshaftCount)
+        .setX((5).pixels())
+        .setY(new SiblingConstraint(2))
+        .setChildOf(rectangle);
+
+    new UIText("§7Mineshafts per Hour: §3"+(mineshaftCount/((Date.now()-start)/3600000)).toFixed(2))
+        .setX((5).pixels())
+        .setY(new SiblingConstraint(2))
+        .setChildOf(rectangle);
+
+    new UIText("§7Time Since Mineshaft: "+(lastMineshaft == 0 ? "§cN/A" : "§3"+toClock(Date.now()-lastMineshaft, true)))
+        .setX((5).pixels())
+        .setY(new SiblingConstraint(2))
+        .setChildOf(rectangle);
+
+    var fuelString;
+    if(fuel.remaining == -1) {
+        fuelString = "§7Drill Fuel: §cUnknown §8(0.0%)";
+    } else if(fuel.remaining == Infinity) {
+        fuelString = "§7Drill Fuel: §2Infinite §8(100.0%)";
+    } else if(fuel.remaining.replace(",", "") == 0) {
+        fuelString = "§7Drill Fuel: §c0 §8(0.0%)";
+    } else if(fuel.remaining.replace(",", "") < 500) {
+        fuelString = "§7Drill Fuel: §e"+fuel.remaining+" §8("+(fuel.remaining.replace(",", "")/fuel.max * 100).toFixed(1)+"%)";
+    } else {
+        fuelString = "§7Drill Fuel: §a"+fuel.remaining+" §8("+(fuel.remaining.replace(",", "")/fuel.max * 100).toFixed(1)+"%)";
+    }
+
+    new UIText(fuelString)
+        .setX((5).pixels())
+        .setY(new SiblingConstraint(2))
+        .setChildOf(rectangle);
+    hud.draw();
+});
+
+register("chat", (event) => {
+    var formatted = ChatLib.getChatMessage(event);
+    var message = ChatLib.removeFormatting(formatted);
+    if(message.startsWith("WOW! You found a Glacite Mineshaft portal!")) {
+        lastMineshaft = Date.now();
+        mineshaftCount++;
+    }
+    if(/^(CORPSE LOOTER|MINESHAFT EXPLORER|(((AQUAMARINE|CITRINE|ONYX|PERIDOT) GEMSTONE|TUNGSTEN|UMBER|GLACITE|SCRAP)) COLLECTOR) Commission Complete! Visit the King to claim your rewards!$/g.exec(message)) {
+        commissionHistory.push(Date.now());
+    }
+});
+
+register("renderScoreboard", () => {
+    if(!inGlaciteTunnels(true)) return;
+    var lines = Scoreboard.getLines();
+    var isCold = false;
+    lines.forEach((formatted) => {
+        let line = ChatLib.removeFormatting(formatted).replace(/[^A-z0-9 :(),.\-'û᠅]/g, "");
+        if(line.startsWith("᠅ Gemstone: ")) {
+            if(powders.gemstone != line.replace("᠅ Gemstone: ", "")) {
+                powders.gemstone = line.replace("᠅ Gemstone: ", "");
+                if(!powderHistory.gemstone) {
+                    powderHistory.gemstone = {time: Date.now(), powder: parseInt(powders.gemstone.replace(",", ""))};
+                }
+                lastPowder.gemstone = Date.now();
+            }
+        }
+        if(line.startsWith("᠅ Glacite: ")) {
+            if(powders.glacite != line.replace("᠅ Glacite: ", "")) {
+                powders.glacite = line.replace("᠅ Glacite: ", "");
+                if(!powderHistory.glacite) {
+                    powderHistory.glacite = {time: Date.now(), powder: parseInt(powders.glacite.replace(",", ""))};
+                }
+                lastPowder.glacite = Date.now();
+            }
+        }
+        if(line.startsWith("Cold: ")) {
+            isCold = true;
+            var currentCold = parseInt(line.replace("Cold: ", ""));
+            if(cold != currentCold) {
+                coldUpdates.push(Date.now());
+                updateRate = (Date.now()-coldUpdates[0])/coldUpdates.length;
+                untilDeath = Date.now()+((100+currentCold)*updateRate);
+            }
+            cold = currentCold;
+            if(coldUpdates.length > 10) {
+                coldUpdates.splice(0, coldUpdates.length-11);
+            }
+        }
+    });
+    if(!isCold) {
+        coldUpdates = [];
+        cold = Infinity;
+        updateRate = 0;
+        untilDeath = 0;
+    }
+});
+
+register("step", () => {
+    if(!inGlaciteTunnels(true)) return;
+    if(powders.gemstone == "???" || powders.glacite == "???") {
+        TabList.getNames().forEach(formatted => {
+            let line = ChatLib.removeFormatting(formatted);
+            if(line.startsWith(" Gemstone: ") && powders.gemstone == "???") {
+                powders.gemstone = line.replace(" Gemstone: ", "");
+            }
+            if(line.startsWith(" Glacite: ") && powders.glacite == "???") {
+                powders.glacite = line.replace(" Glacite: ", "");
+            }
+        });
+    }
+    if(Player.getHeldItem()) {
+        if(Player.getHeldItem().getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id") == "GEMSTONE_GAUNTLET") {
+            fuel.remaining = Infinity;
+            fuel.max = Infinity;
+        } else {
+            Player.getHeldItem().getLore().forEach((line) => {
+                var text = ChatLib.removeFormatting(line);
+                if(!text.startsWith("Fuel: ")) return;
+                var drillFuel = text.replace("Fuel: ", "");
+                fuel.remaining = drillFuel.split("/")[0];
+                fuel.max = parseInt(drillFuel.split("/")[1].replace("k"))*1000;        
+            })
+        }
+    }
+
+}).setFps(4);
+
+function toClock(ms, hours = false) {
+    if(hours) {
+        return formatGMT.format(new JavaDate(ms));
+    }
+    return shortFormatGMT.format(new JavaDate(ms));
+}
+function addCommas(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+function calculateRate(powder) {
+    if(Date.now()-lastPowder[powder] > 180000) {
+        powderHistory[powder] = undefined;
+        return 0;
+    }
+    var history = powderHistory[powder];
+    if(!history) return 0;
+    var powderDifference = parseInt(powders[powder].replace(",", ""))-history.powder;
+    var timeDifference = (Date.now()-(history.time));
+    return addCommas(Math.round((powderDifference/timeDifference)*3600000));
+}

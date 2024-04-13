@@ -1,3 +1,11 @@
+/* 
+ * This module can be found at https://github.com/cognitivitydev/CrystalMap/.
+ * You can report any issues or add suggestions there.
+ */
+
+/// <reference types="../../CTAutocomplete" />
+/// <reference lib="es2015" />
+
 import {
     CenterConstraint,
     SubtractiveConstraint,

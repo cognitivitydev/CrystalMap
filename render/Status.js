@@ -161,6 +161,7 @@ register("chat", (event) => {
 });
 
 register("renderScoreboard", () => {
+    if(!inCrystalHollows()) return;
     var lines = Scoreboard.getLines();
     lines.forEach((formatted) => {
         let line = ChatLib.removeFormatting(formatted).replace(/[^A-z0-9 :(),.\-'û᠅]/g, "");
@@ -174,6 +175,7 @@ register("renderScoreboard", () => {
 })
 
 register("step", () => {
+    if(!inCrystalHollows()) return;
     robotParts = {switch: false, motor: false, heart: false, transmitter: false, ftx: false, reflector: false}
     
     foundTools = {diamond: false, emerald: false, gold: false, lapis: false}    

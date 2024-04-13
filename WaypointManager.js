@@ -290,7 +290,10 @@ export function inDwarvenMines() {
     });
     return inMines;
 }
-export function inGlaciteTunnels() {
+export function inGlaciteTunnels(mineshafts = false) {
+    if(mineshafts) {
+        return /(Dwarven Base Camp)|(Glacite (Lake|Tunnels|Mineshafts))/g.exec(getArea())
+    }
     return /(Dwarven Base Camp)|(Glacite (Lake|Tunnels))/g.exec(getArea())
 }
 

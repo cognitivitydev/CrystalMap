@@ -15,6 +15,7 @@ import "./chat/ClientChat";
 import "./chat/MineshaftAlert";
 import "./chat/ShareProtection";
 import "./waypoints/EntityWaypoints";
+import "./render/GlaciteStatus";
 import "./render/MapRenderer";
 import "./render/RenderUtils";
 import "./render/Status";

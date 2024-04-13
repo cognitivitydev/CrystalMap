@@ -1,3 +1,10 @@
+/* 
+ * This module can be found at https://github.com/cognitivitydev/CrystalMap/.
+ * You can report any issues or add suggestions there.
+ */
+
+/// <reference types="../../CTAutocomplete" />
+/// <reference lib="es2015" />
 
 import { distance } from "../render/RenderUtils";
 import renderBeaconBeam from "../../BeaconBeam"
@@ -8,7 +15,7 @@ const Color = Java.type("java.awt.Color");
 
 const gemstones = {
     AQUAMARINE: {name: "Aquamarine", color: new Color(0, 0, 170 / 255, 1), locations: [{x: -1, y: 140, z: 435}, {x: 53, y: 151, z: 401}, {x: 84, y: 151, z: 323}]},
-    CITRINE: {name: "Citrine", color: new Color(255 / 255, 170 / 255, 0, 1), locations: [{x: -40, y: 129, z: 416}, {x: -57, y: 145, z: 421}, {x: 36, y: 120, z: 387}]},
+    CITRINE: {name: "Citrine", color: new Color(170 / 255, 0, 0, 1), locations: [{x: -40, y: 129, z: 416}, {x: -57, y: 145, z: 421}, {x: 36, y: 120, z: 387}]},
     ONYX: {name: "Onyx", color: new Color(85 / 255, 85 / 255, 85 / 255, 1), locations: [{x: 79, y: 120, z: 412}, {x: -11, y: 133, z: 386}, {x: -68, y: 131, z: 409}]},
     PERIDOT: {name: "Peridot", color: new Color(0, 170 / 255, 0, 1), locations: [{x: 91, y: 123, z: 397}, {x: -73, y: 124, z: 461}, {x: -76, y: 121, z: 281}, {x: -62, y: 147, z: 304}]}
 }
@@ -23,7 +30,7 @@ register("renderWorld", () => {
             var dist = distance(location);
 
             renderBeaconBeam(location.x, 0, location.z, gemstone.color.getRed() / 255, gemstone.color.getGreen() / 255, gemstone.color.getBlue() / 255, 0.5, true);
-            Tessellator.drawString(gemstone.name+" §c("+dist+"m)", location.x + 0.5, location.y + 1.5, location.z + 0.5, gemstone.color.getRGB(), true, 0.75, true);    
+            Tessellator.drawString(gemstone.name+" §a("+dist+"m)", location.x + 0.5, location.y + 1.5, location.z + 0.5, gemstone.color.getRGB(), true, 0.75, true);    
         });
     })
 })
