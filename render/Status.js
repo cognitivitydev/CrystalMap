@@ -40,11 +40,6 @@ var fuel = {
     max: 0
 }
 
-var powders = {
-    mithril: "???",
-    gemstone: "???"
-}
-
 var robotParts = {
     switch: false,
     motor: false,
@@ -120,12 +115,12 @@ register("renderOverlay", () => {
         .setY(new SiblingConstraint(2))
         .setChildOf(rectangle);
 
-    new UIText("§7Mithril Powder: §2"+powders.mithril+" ᠅")
+    new UIText("§7Mithril Powder: §2"+Settings.mithrilPowder+" ᠅")
         .setX((5).pixels())
         .setY(new SiblingConstraint(2))
         .setChildOf(rectangle);
     
-    new UIText("§7Gemstone Powder: §d"+powders.gemstone+" ᠅")
+    new UIText("§7Gemstone Powder: §d"+Settings.gemstonePowder+" ᠅")
         .setX((5).pixels())
         .setY(new SiblingConstraint(2))
         .setChildOf(rectangle);
@@ -165,11 +160,11 @@ register("renderScoreboard", () => {
     var lines = Scoreboard.getLines();
     lines.forEach((formatted) => {
         let line = ChatLib.removeFormatting(formatted).replace(/[^A-z0-9 :(),.\-'û᠅]/g, "");
-        if(line.startsWith("᠅ Gemstone: ")) {
-            powders.gemstone = line.replace("᠅ Gemstone: ", "");
-        }
         if(line.startsWith("᠅ Mithril: ")) {
-            powders.mithril = line.replace("᠅ Mithril: ", "");
+            Settings.mithrilPowder = line.replace("᠅ Mithril: ", "");
+        }
+        if(line.startsWith("᠅ Gemstone: ")) {
+            Settings.gemstonePowder = line.replace("᠅ Gemstone: ", "");
         }
     });
 })
@@ -220,11 +215,11 @@ register("step", () => {
     try {
         TabList.getNames().forEach(name => {
             let line = ChatLib.removeFormatting(name);
-            if(line.startsWith(" Mithril Powder: ")) {
-                powders.mithril = line.replace(" Mithril Powder: ", "");
+            if(line.startsWith(" Mithril: ")) {
+                Settings.mithrilPowder = line.replace(" Mithril: ", "");
             }
-            if(line.startsWith(" Gemstone Powder: ")) {
-                powders.gemstone = line.replace(" Gemstone Powder: ", "");
+            if(line.startsWith(" Gemstone: ")) {
+                Settings.gemstonePowder = line.replace(" Gemstone: ", "");
             }
         })    
     } catch(exception) {}

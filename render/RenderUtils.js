@@ -8,6 +8,11 @@
 
 import Settings from "../config"
 
+const C17PacketCustomPayload = net.minecraft.network.play.client.C17PacketCustomPayload
+const PacketBuffer = net.minecraft.network.PacketBuffer
+const Unpooled = Java.type('io.netty.buffer.Unpooled')
+const System = Java.type("java.lang.System");
+
 var pinging;
 
 export function distance(location) {
@@ -16,19 +21,28 @@ export function distance(location) {
     return Math.round(distance * Math.pow(10, decimal)) / Math.pow(10, decimal);
 }
 export function refreshPing() {
-    pinging = Date.now();
-    ChatLib.command("?");
+    const hypixelPing = new C17PacketCustomPayload("hypixel:ping", new PacketBuffer(Unpooled.buffer(1).writeByte(1)))
+    Client.sendPacket(hypixelPing);
+    var start = System.nanoTime();
+    ChatLib.chat("&8&oPinging... (1/3)");
+    var pings = [];
+    const packetEvent = register('packetReceived', packet => {
+        if (packet.func_149169_c() == 'hypixel:ping') {
+            var ms = Math.floor((System.nanoTime() - start) / 1000000);
+            pings.push(ms);
+            if(pings.length >= 3) {
+                packetEvent.unregister();
+                Settings.ping = Math.floor((pings[0]+pings[1]+pings[2])/3);
+                ChatLib.chat("&d[CRYSTAL MAP] &7Your ping has been set to &a"+Settings.ping+" ms&7. This can be changed at any time in settings.")
+            } else {
+                Client.sendPacket(hypixelPing);
+                start = System.nanoTime();
+                ChatLib.chat("&8&oPinging... ("+(pings.length+1)+"/3)");
+            }
+        }
+    }).setFilteredClass(net.minecraft.network.play.server.S3FPacketCustomPayload);    
 }
-register("chat", (event) => {
-    var formattedMessage = ChatLib.getChatMessage(event);
-    var message = ChatLib.removeFormatting(formattedMessage);
-    if(message.equals("You're not allowed to do this!") && pinging != 0) {
-        Settings.ping = Java.type("java.lang.Integer").valueOf(""+(Date.now() - pinging));
-        pinging = 0;
-        cancel(event);
-        ChatLib.chat("&d[CRYSTAL MAP] &7Your ping has been set to &a"+Settings.ping+" ms&7. This can be changed at any time in settings.")
-    }
-});
+
 export function calculateDistance(location1, location2) {
     const dx = location1.x - location2.x;
     const dy = location1.y - location2.y;

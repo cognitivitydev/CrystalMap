@@ -22,8 +22,11 @@ import Settings from "../config";
 const Color = Java.type("java.awt.Color");
 const mapOffset = { x: 0, y: 0 };
 const statusOffset = { x: 0, y: 0 };
+const glaciteStatusOffset = { x: 0, y: 0 };
 var draggingMap = false;
 var draggingStatus = false;
+var draggingGlaciteStatus = false;
+
 
 export function openDraggableGui() {
     var mapBox = new UIBlock(new Color(49/255, 175/255, 236/255, 50/255))
@@ -143,10 +146,70 @@ export function openDraggableGui() {
         .setColor(Color.ORANGE)
         .setChildOf(statusBox);
 
+
+    var glaciteStatusBox = new UIBlock(new Color(49/255, 175/255, 236/255, 50/255))
+        .setX((Settings.glaciteStatusX * Renderer.screen.getWidth()).pixels())
+        .setY((Settings.glaciteStatusY * Renderer.screen.getHeight()).pixels())
+        .setWidth((192).pixels())
+        .setHeight((118).pixels())
+        .onMouseClick((comp, event) => {
+            draggingGlaciteStatus = true;
+            glaciteStatusOffset.x = event.absoluteX;
+            glaciteStatusOffset.y = event.absoluteY;
+        })
+        .onMouseRelease(() => {
+            draggingGlaciteStatus = false;
+        })
+        .onMouseDrag((comp, mx, my) => {
+            if (!draggingGlaciteStatus) return;
+            const absoluteX = mx + comp.getLeft();
+            const absoluteY = my + comp.getTop();
+            const dx = absoluteX - glaciteStatusOffset.x;
+            const dy = absoluteY - glaciteStatusOffset.y;
+            glaciteStatusOffset.x = absoluteX;
+            glaciteStatusOffset.y = absoluteY;
+            const newX = glaciteStatusBox.getLeft() + dx;
+            Settings.glaciteStatusX = newX / Renderer.screen.getWidth();
+            const newY = glaciteStatusBox.getTop() + dy;
+            Settings.glaciteStatusY = newY / Renderer.screen.getHeight();
+            glaciteStatusBox.setX(newX.pixels());
+            glaciteStatusTextX.setText((newX*2)+" px");
+            glaciteStatusTextY.setText((newY*2)+" px");
+            glaciteStatusBox.setY(newY.pixels());
+        })
+        .onMouseEnter((comp) => {
+            animate(comp, (animation) => {
+                animation.setColorAnimation(Animations.OUT_EXP, 0.3, new ConstantColorConstraint(new Color(164/255, 82/255, 227/255, 50/255)));
+            });
+        })
+        .onMouseLeave((comp) => {
+            animate(comp, (anim) => {
+                anim.setColorAnimation(Animations.OUT_EXP, 0.3, new ConstantColorConstraint(new Color(49/255, 175/255, 236/255, 50/255)));
+            });
+        });
+
+    new UIText("Glacite Status HUD")
+        .setX(new CenterConstraint())
+        .setY((10).percent())
+        .setColor(Color.MAGENTA)
+        .setChildOf(glaciteStatusBox);
+
+    var glaciteStatusTextX = new UIText(Math.round(Settings.glaciteStatusX * Renderer.screen.getWidth())*2+" px")
+        .setX(new CenterConstraint())
+        .setY(new SubtractiveConstraint(new CenterConstraint(), (5).pixels()))
+        .setColor(Color.ORANGE)
+        .setChildOf(glaciteStatusBox);
+    var glaciteStatusTextY = new UIText(Math.round(Settings.glaciteStatusY * Renderer.screen.getHeight())*2+" px")
+        .setX(new CenterConstraint())
+        .setY(new AdditiveConstraint(new CenterConstraint(), (5).pixels()))
+        .setColor(Color.ORANGE)
+        .setChildOf(glaciteStatusBox);
+
     const gui = new JavaAdapter(WindowScreen, {
         init() {
             mapBox.setChildOf(this.getWindow());
             statusBox.setChildOf(this.getWindow());
+            glaciteStatusBox.setChildOf(this.getWindow());
         }
     });
     gui.init();

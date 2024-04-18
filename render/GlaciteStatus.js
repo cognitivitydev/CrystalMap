@@ -52,14 +52,11 @@ var fuel = {
     max: 0
 }
 
-var powders = {
-    gemstone: "???",
-    glacite: "???"
-}
 var powderHistory = {
     gemstone: undefined,
     glacite: undefined
 }
+
 var lastPowder = {
     gemstone: 0,
     glacite: 0
@@ -76,8 +73,8 @@ register("renderOverlay", () => {
     if(!inGlaciteTunnels(true)) return;
     if(!Settings.status) return;
 
-    var x = Settings.statusX * Renderer.screen.getWidth();
-    var y = Settings.statusY * Renderer.screen.getHeight();
+    var x = Settings.glaciteStatusX * Renderer.screen.getWidth();
+    var y = Settings.glaciteStatusY * Renderer.screen.getHeight();
     const hud = new Window();
 
     var rectangle = new UIRoundedRectangle(3)
@@ -93,7 +90,6 @@ register("renderOverlay", () => {
     else if(coldUpdates.length < 3) time = "§8Calculating...";
     else if(untilDeath-Date.now() < 15000) time = "§c§l"+toClock(untilDeath-Date.now());
     else time = "§9"+toClock(untilDeath-Date.now());
-
     new UIText("§7Time Until Death: "+time)
         .setX((5).pixels())
         .setY((5).pixels())
@@ -104,22 +100,22 @@ register("renderOverlay", () => {
         .setY(new SiblingConstraint(2))
         .setChildOf(rectangle);
     
-    new UIText("§7Gemstone Powder: §d"+powders.gemstone+" ᠅")
+    new UIText("§7Gemstone Powder: §d"+Settings.gemstonePowder+" ᠅")
         .setX((5).pixels())
         .setY(new SiblingConstraint(2))
         .setChildOf(rectangle);
 
-    new UIText("§7Glacite Powder: §b"+powders.glacite+" ᠅")
+    new UIText("§7Glacite Powder: §b"+Settings.glacitePowder+" ᠅")
         .setX((5).pixels())
         .setY(new SiblingConstraint(2))
         .setChildOf(rectangle);
 
-    new UIText("§7Gemstone Powder per Hour: §d"+calculateRate("gemstone")+" ᠅")
+    new UIText("§7Gemstone Powder per Hour: §d"+calculateRate("gemstone", Settings.gemstonePowder)+" ᠅")
         .setX((5).pixels())
         .setY(new SiblingConstraint(2))
         .setChildOf(rectangle);
 
-    new UIText("§7Glacite Powder per Hour: §b"+calculateRate("glacite")+" ᠅")
+    new UIText("§7Glacite Powder per Hour: §b"+calculateRate("glacite", Settings.glacitePowder)+" ᠅")
         .setX((5).pixels())
         .setY(new SiblingConstraint(2))
         .setChildOf(rectangle);
@@ -178,19 +174,25 @@ register("renderScoreboard", () => {
     lines.forEach((formatted) => {
         let line = ChatLib.removeFormatting(formatted).replace(/[^A-z0-9 :(),.\-'û᠅]/g, "");
         if(line.startsWith("᠅ Gemstone: ")) {
-            if(powders.gemstone != line.replace("᠅ Gemstone: ", "")) {
-                powders.gemstone = line.replace("᠅ Gemstone: ", "");
+            if(Settings.gemstonePowder != line.replace("᠅ Gemstone: ", "")) {
+                Settings.gemstonePowder = line.replace("᠅ Gemstone: ", "");
+                if(parseInt(Settings.gemstonePowder.replace(",", "")) < powderHistory.gemstone?.powder) {
+                    powderHistory.gemstone = undefined;
+                }
                 if(!powderHistory.gemstone) {
-                    powderHistory.gemstone = {time: Date.now(), powder: parseInt(powders.gemstone.replace(",", ""))};
+                    powderHistory.gemstone = {time: Date.now(), powder: parseInt(Settings.gemstonePowder.replace(",", ""))};
                 }
                 lastPowder.gemstone = Date.now();
             }
         }
         if(line.startsWith("᠅ Glacite: ")) {
-            if(powders.glacite != line.replace("᠅ Glacite: ", "")) {
-                powders.glacite = line.replace("᠅ Glacite: ", "");
+            if(Settings.glacitePowder != line.replace("᠅ Glacite: ", "")) {
+                Settings.glacitePowder = line.replace("᠅ Glacite: ", "");
+                if(parseInt(Settings.glacitePowder.replace(",", "")) < powderHistory.glacite?.powder) {
+                    powderHistory.glacite = undefined;
+                }
                 if(!powderHistory.glacite) {
-                    powderHistory.glacite = {time: Date.now(), powder: parseInt(powders.glacite.replace(",", ""))};
+                    powderHistory.glacite = {time: Date.now(), powder: parseInt(Settings.glacitePowder.replace(",", ""))};
                 }
                 lastPowder.glacite = Date.now();
             }
@@ -219,19 +221,20 @@ register("renderScoreboard", () => {
 
 register("step", () => {
     if(!inGlaciteTunnels(true)) return;
-    if(powders.gemstone == "???" || powders.glacite == "???") {
+    if(Settings.gemstonePowder == "???" || Settings.glacitePowder == "???") {
         TabList.getNames().forEach(formatted => {
             let line = ChatLib.removeFormatting(formatted);
-            if(line.startsWith(" Gemstone: ") && powders.gemstone == "???") {
-                powders.gemstone = line.replace(" Gemstone: ", "");
+            if(line.startsWith(" Gemstone: ") && Settings.gemstonePowder == "???") {
+                Settings.gemstonePowder = line.replace(" Gemstone: ", "");
             }
-            if(line.startsWith(" Glacite: ") && powders.glacite == "???") {
-                powders.glacite = line.replace(" Glacite: ", "");
+            if(line.startsWith(" Glacite: ") && Settings.glacitePowder == "???") {
+                Settings.glacitePowder = line.replace(" Glacite: ", "");
             }
         });
     }
     if(Player.getHeldItem()) {
-        if(Player.getHeldItem().getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id") == "GEMSTONE_GAUNTLET") {
+        var extraAttributes = Player.getHeldItem().getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes");
+        if(extraAttributes.getString("id") == "GEMSTONE_GAUNTLET") {
             fuel.remaining = Infinity;
             fuel.max = Infinity;
         } else {
@@ -241,7 +244,10 @@ register("step", () => {
                 var drillFuel = text.replace("Fuel: ", "");
                 fuel.remaining = drillFuel.split("/")[0];
                 fuel.max = parseInt(drillFuel.split("/")[1].replace("k"))*1000;        
-            })
+            });
+            if(extraAttributes.getInteger("drill_fuel")) {
+                fuel.remaining = addCommas(extraAttributes.getInteger("drill_fuel"));
+            }
         }
     }
 
@@ -256,14 +262,14 @@ function toClock(ms, hours = false) {
 function addCommas(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
-function calculateRate(powder) {
+function calculateRate(powder, currentPowder) {
     if(Date.now()-lastPowder[powder] > 180000) {
         powderHistory[powder] = undefined;
         return 0;
     }
     var history = powderHistory[powder];
     if(!history) return 0;
-    var powderDifference = parseInt(powders[powder].replace(",", ""))-history.powder;
+    var powderDifference = parseInt(currentPowder.replace(",", ""))-history.powder;
     var timeDifference = (Date.now()-(history.time));
     return addCommas(Math.round((powderDifference/timeDifference)*3600000));
 }

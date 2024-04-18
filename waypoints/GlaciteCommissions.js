@@ -29,8 +29,8 @@ register("renderWorld", () => {
         gemstone.locations.forEach(location => {
             var dist = distance(location);
 
-            renderBeaconBeam(location.x, 0, location.z, gemstone.color.getRed() / 255, gemstone.color.getGreen() / 255, gemstone.color.getBlue() / 255, 0.5, true);
-            Tessellator.drawString(gemstone.name+" §a("+dist+"m)", location.x + 0.5, location.y + 1.5, location.z + 0.5, gemstone.color.getRGB(), true, 0.75, true);    
+            renderBeaconBeam(location.x, 0, location.z, gemstone.color.getRed() / 255, gemstone.color.getGreen() / 255, gemstone.color.getBlue() / 255, Math.min(0.8, Math.max(0, 0.05*Math.pow(dist, 2))), true);
+            Tessellator.drawString(gemstone.name+" §b("+dist+"m)", location.x + 0.5, location.y + 1.5, location.z + 0.5, gemstone.color.getRGB(), true, 0.75, true);    
         });
     })
 })

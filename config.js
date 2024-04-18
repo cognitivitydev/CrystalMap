@@ -69,6 +69,48 @@ class Settings {
     })
     statusY = 0.00926;
 
+    // HIDDEN
+    @DecimalSliderProperty({
+        name: "Glacite Status X Location",
+        category: "General",
+        min: 0,
+        max: 1,
+        hidden: true
+    })
+    glaciteStatusX = 0.00417;
+
+    // HIDDEN
+    @DecimalSliderProperty({
+        name: "Glacite Status Y Location",
+        category: "General",
+        min: 0,
+        max: 1,
+        hidden: true
+    })
+    glaciteStatusY = 0.00741;
+
+    
+    @TextProperty({
+        name: "Mithril Powder",
+        category: "General",
+        hidden: true
+    })
+    mithrilPowder = "???";
+    
+    @TextProperty({
+        name: "Gemstone Powder",
+        category: "General",
+        hidden: true
+    })
+    gemstonePowder = "???";
+    
+    @TextProperty({
+        name: "Glacite Powder",
+        category: "General",
+        hidden: true
+    })
+    glacitePowder = "???";
+
     @SwitchProperty({
         name: "Minimap",
         description: "Toggles the minimap's display.",
@@ -249,7 +291,75 @@ class Settings {
         category: "Glacite Tunnels",
         subcategory: "Mineshaft",
     })
-    mineshaftChatMessage = "Mineshaft!";
+    mineshaftChatMessage = "!ptme";
+
+    @SwitchProperty({
+        name: "Show Waypoints in Mineshafts",
+        description: "Creates waypoints when you go near a corpse.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftShowWaypoints = true;
+
+    // REQUIRES "Show Waypoints in Mineshafts"
+    @SwitchProperty({
+        name: "Parse Mineshaft Waypoints from Chat",
+        description: "Parses coordinates from chat when you are in a mineshaft.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftParseWaypoints = true;
+
+    // REQUIRES "Show Waypoints in Mineshafts"
+    @SwitchProperty({
+        name: "Send Mineshaft Waypoints in Chat",
+        description: "Shares mineshaft waypoints in chat when they are created.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftShareWaypoints = true;
+
+    // REQUIRES "Send Mineshaft Waypoints in Chat"
+    @SelectorProperty({
+        name: "Mineshaft Waypoints Channel",
+        description: "Choose the chat channel your waypoints are shared to.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+        options: ["All Chat", "Party Chat", "Co-op Chat", "Guild Chat"]
+    })
+    mineshaftShareChannel = 1;
+
+    @SwitchProperty({
+        name: "Exit Waypoint",
+        description: "Show the exit of the Mineshaft you are in.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftExit = true;
+
+    @SwitchProperty({
+        name: "Share Corpse Locations",
+        description: "Sends your location in Party Chat when you click on corpses.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftShareCorpses = true;
+
+    @SwitchProperty({
+        name: "Parse Mineshaft Waypoints from Chat",
+        description: "Creates waypoints in mineshafts when they are sent in chat.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftWaypoints = true;
+
+    @SwitchProperty({
+        name: "Automatically Transfer Party",
+        description: "Automatically transfers party ownership in the Dwarven Mines when they say \"!ptme\".",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftTransferParty = true;
 
     @SwitchProperty({
         name: "Beacon Waypoints",
@@ -921,8 +1031,15 @@ class Settings {
         this.addDependency("Amethyst Crystal", "&cEnable Developer Options");
         this.addDependency("Sapphire Crystal", "&cEnable Developer Options");
         this.addDependency("Topaz Crystal", "&cEnable Developer Options");
+        this.addDependency("Mithril Powder", "&cEnable Developer Options");
+        this.addDependency("Gemstone Powder", "&cEnable Developer Options");
+        this.addDependency("Glacite Powder", "&cEnable Developer Options");
 
         this.addDependency("Mineshaft Chat Channel", "Send Mineshaft in Chat");
+        this.addDependency("Mineshaft Chat Message", "Send Mineshaft in Chat");
+        this.addDependency("Parse Mineshaft Waypoints from Chat", "Show Waypoints in Mineshafts");
+        this.addDependency("Send Mineshaft Waypoints in Chat", "Show Waypoints in Mineshafts");
+        this.addDependency("Mineshaft Waypoints Channel", "Send Mineshaft Waypoints in Chat");
         this.addDependency("Mineshaft Chat Message", "Send Mineshaft in Chat");
 
         this.addDependency("Only Show Waypoints in Crystal Hollows", "Show Waypoints from Chat");
