@@ -30,7 +30,7 @@ import {
     ChildBasedSizeConstraint,
     ChildBasedMaxSizeConstraint
 } from "../../Elementa";
-import { inGlaciteTunnels } from "../WaypointManager";
+import { getArea, inGlaciteTunnels } from "../WaypointManager";
 import Settings from "../config";
 
 const Color = Java.type("java.awt.Color");
@@ -69,9 +69,11 @@ var cold = Infinity;
 var updateRate = 0;
 var untilDeath = 0;
 
+var inMineshaft = false;
+
 register("renderOverlay", () => {
     if(!inGlaciteTunnels(true)) return;
-    if(!Settings.status) return;
+    if(!Settings.glaciteStatus) return;
 
     var x = Settings.glaciteStatusX * Renderer.screen.getWidth();
     var y = Settings.glaciteStatusY * Renderer.screen.getHeight();
@@ -158,7 +160,7 @@ register("renderOverlay", () => {
 register("chat", (event) => {
     var formatted = ChatLib.getChatMessage(event);
     var message = ChatLib.removeFormatting(formatted);
-    if(message.startsWith("WOW! You found a Glacite Mineshaft portal!")) {
+    if(message.startsWith("WOW! You found a Glacite Mineshaft portal!") && Settings.glacitePersonalMineshafts) {
         lastMineshaft = Date.now();
         mineshaftCount++;
     }
@@ -221,6 +223,15 @@ register("renderScoreboard", () => {
 
 register("step", () => {
     if(!inGlaciteTunnels(true)) return;
+    if(getArea().equals("Glacite Mineshafts")) {
+        if(!inMineshaft && !Settings.glacitePersonalMineshafts) {
+            lastMineshaft = Date.now();
+            mineshaftCount++;
+        }
+        inMineshaft = true;
+    } else {
+        inMineshaft = false;
+    }
     if(Settings.gemstonePowder == "???" || Settings.glacitePowder == "???") {
         TabList.getNames().forEach(formatted => {
             let line = ChatLib.removeFormatting(formatted);

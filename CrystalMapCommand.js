@@ -11,17 +11,17 @@ import { openRouteGui } from "./gui/RouteGui";
 import { openSharingGui } from "./gui/SharingGui";
 import { openWaypointGui } from "./gui/WaypointGui";
 import { refreshPing } from "./render/RenderUtils";
-import { inCrystalHollows, inDwarvenMines, removeWaypoint } from "./WaypointManager";
+import { inCrystalHollows, inDwarvenMines, inGlaciteTunnels, removeWaypoint } from "./WaypointManager";
 import Settings from "./config";
 
 register("command", (...args) => {
 
     if(!args || !args[0]) {
-        if(!inCrystalHollows() && !inDwarvenMines()) {
+        if(!inCrystalHollows() && !inDwarvenMines() && !inGlaciteTunnels(true)) {
             ChatLib.chat("&cIt seems like you aren't in the Crystal Hollows or Dwarven Mines! Type &n/crystalmap settings&c to open settings.");
             return;
         }
-        if(inDwarvenMines()) {
+        if(inDwarvenMines() || inGlaciteTunnels(true)) {
             Settings.openGUI();
             return;
         }

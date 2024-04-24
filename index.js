@@ -13,6 +13,7 @@ import "./chat/ChatSharing";
 import "./chat/ChatCoordinates";
 import "./chat/ClientChat";
 import "./chat/MineshaftAlert";
+import "./chat/MineshaftLeave";
 import "./chat/PartyTransfer";
 import "./chat/ShareProtection";
 import "./waypoints/EntityWaypoints";

@@ -259,12 +259,12 @@ class Settings {
     glaciteCommissions = true;
 
     @SwitchProperty({
-        name: "Mineshaft Warning",
-        description: "Alerts you when you discover a mineshaft.",
+        name: "Draw Line to Mineshaft",
+        description: "Draws a line to your discovered mineshaft.",
         category: "Glacite Tunnels",
         subcategory: "Mineshaft"
     })
-    mineshaftWarning = true;
+    mineshaftLine = true;
 
     @SwitchProperty({
         name: "Send Mineshaft in Chat",
@@ -339,11 +339,47 @@ class Settings {
 
     @SwitchProperty({
         name: "Share Corpse Locations",
-        description: "Sends your location in Party Chat when you click on corpses.",
+        description: "Sends the location of nearby corpses in Party Chat.",
         category: "Glacite Tunnels",
         subcategory: "Mineshaft",
     })
     mineshaftShareCorpses = true;
+
+    // REQUIRES "Share Corpse Locations"
+    @CheckboxProperty({
+        name: "Share Lapis Corpse",
+        description: "Shares the location of nearby Lapis Corpses.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftShareLapis = true;
+    
+    // REQUIRES "Share Corpse Locations"
+    @CheckboxProperty({
+        name: "Share Tungsten Corpse",
+        description: "Shares the location of nearby Tungsten Corpses.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftShareTungsten = true;
+
+    // REQUIRES "Share Corpse Locations"
+    @CheckboxProperty({
+        name: "Share Umber Corpse",
+        description: "Shares the location of nearby Umber Corpses.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftShareUmber = true;
+
+    // REQUIRES "Share Corpse Locations"
+    @CheckboxProperty({
+        name: "Share Vanguard Corpse",
+        description: "Shares the location of nearby Vanguard Corpses.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftShareVanguard = true;
 
     @SwitchProperty({
         name: "Parse Mineshaft Waypoints from Chat",
@@ -360,6 +396,32 @@ class Settings {
         subcategory: "Mineshaft",
     })
     mineshaftTransferParty = true;
+
+    @SwitchProperty({
+        name: "Exit Waypoint After Scrap",
+        description: "Press a keybind to exit the mineshaft after obtaining a scrap.\nThe keybind can be changed in controls (defaults to Y).",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftExitKeybind = true;
+
+    @SliderProperty({
+        name: "Exit Period",
+        description: "Period of time to warp out after obtaining a scrap (in milliseconds).",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+        min: 2000,
+        max: 15000
+    })
+    mineshaftExitPeriod = 7000;
+
+    @ParagraphProperty({
+        name: "Exit Location",
+        description: "Specifies the name of the warp to teleport to when you obtain a scrap (eg: \"camp\", \"mines\").",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    mineshaftExitLocation = "camp";
 
     @SwitchProperty({
         name: "Beacon Waypoints",
@@ -1018,8 +1080,25 @@ class Settings {
         name: "Status HUD",
         description: "Shows a list of useful information in the Crystal Holows. Customizability coming soon(tm).",
         category: "Status HUD",
+        subcategory: "Crystal Hollows"
     })
     status = true;
+
+    @SwitchProperty({
+        name: "Glacite Status HUD",
+        description: "Shows a list of useful information in the Glacite Tunnels. More customizability coming soon(tm).",
+        category: "Status HUD",
+        subcategory: "Glacite Tunnels"
+    })
+    glaciteStatus = true;
+
+    @SwitchProperty({
+        name: "Only Show Personal Mineshafts",
+        description: "Only shows mineshafts found by you in the Status HUD.",
+        category: "Status HUD",
+        subcategory: "Glacite Tunnels"
+    })
+    glacitePersonalMineshafts = false;
 
     constructor() {
         this.initialize(this);
@@ -1041,6 +1120,10 @@ class Settings {
         this.addDependency("Send Mineshaft Waypoints in Chat", "Show Waypoints in Mineshafts");
         this.addDependency("Mineshaft Waypoints Channel", "Send Mineshaft Waypoints in Chat");
         this.addDependency("Mineshaft Chat Message", "Send Mineshaft in Chat");
+        this.addDependency("Share Corpse Locations", "Share Lapis Corpse");
+        this.addDependency("Share Corpse Locations", "Share Tungsten Corpse");
+        this.addDependency("Share Corpse Locations", "Share Umber Corpse");
+        this.addDependency("Share Corpse Locations", "Share Vanguard Corpse");
 
         this.addDependency("Only Show Waypoints in Crystal Hollows", "Show Waypoints from Chat");
         this.addDependency("Automatically Parse Waypoints from Chat", "Show Waypoints from Chat");

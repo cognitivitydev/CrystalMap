@@ -12,6 +12,7 @@ import {
     UIText,
     Window,
 } from "../../Elementa";
+import RenderLibV2 from "../../RenderLibV2";
 import Settings from "../config";
 
 
@@ -45,20 +46,12 @@ register("chat", (event) => {
     }
 });
 
-register("renderOverlay", () => {
-    if(!Settings.mineshaftWarning) return;
-    if((Date.now() - lastMineshaft) < 3000) {
-
-        const hud = new Window();
-
-        new UIText("§cMINESHAFT!")
-            .setX(new CenterConstraint())
-            .setY(new SubtractiveConstraint(new CenterConstraint(), (20).pixels()))
-            .setTextScale((4).pixels())
-            .setChildOf(hud);
-
-        hud.draw();
-
-        World.playSound("note.pling", 1, 2)
-    }
+register("renderWorld", () => {
+    if(!Settings.mineshaftLine) return;
+    World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).forEach(entity => {
+        let distance = Player.asPlayerMP().distanceTo(entity);
+        if(distance < 10 && entity.getName().equals("§e§lClick to enter!")) {
+            RenderLibV2.drawLine(Player.getRenderX(), Player.getRenderY() + Player.asPlayerMP().getEyeHeight(), Player.getRenderZ(), entity.getX(), entity.getY(), entity.getZ(), 0, 0.8, 1, 1, true);
+        }
+    });
 });

@@ -6,13 +6,13 @@
 /// <reference types="../../CTAutocomplete" />
 /// <reference lib="es2015" />
 
-import { inDwarvenMines } from "../WaypointManager";
+import { inDwarvenMines, inGlaciteTunnels } from "../WaypointManager";
 import Settings from "../config";
 
 var lastTranfer = 0;
 
 register("chat", (event) => {
-    if(!inDwarvenMines()) return;
+    if(!inDwarvenMines() && !inGlaciteTunnels()) return;
     if(!Settings.mineshaftTransferParty) return;
     var formattedMessage = ChatLib.getChatMessage(event);
     var message = ChatLib.removeFormatting(formattedMessage);
@@ -22,12 +22,12 @@ register("chat", (event) => {
             return;
         }
     }
-    var content = message.replace(/^(Party > )?(\[[0-9]+\] )?(\S )?(\[.+\] )?[A-Za-z0-9_]{3,16}( .)?: !ptme$/g, "");
-    if(content.equals(message)) return;
+    var content = message.replace(/^Party > (\[[0-9]+\] )?(\S )?(\[.+\] )?[A-Za-z0-9_]{3,16}( .)?: /g, "");
+    if(!content.equals(Settings.mineshaftChatMessage)) return;
     lastTranfer = Date.now();
-    var player = /(?!^(Party > )?(\[[0-9]+\] )?(\S )?(\[.+\] )?)[A-Za-z0-9_]{3,16}( .)?(?=: !ptme$)/g.exec(message)[0];
+    var player = /(?!^Party > (\[[0-9]+\] )?(\S )?(\[.+\] )?)[A-Za-z0-9_]{3,16}( .)?(?=: !ptme$)/g.exec(message)[0];
     if(player.equals(Player.getName())) return;
-    ChatLib.chat("&7Attempting to transfero7 to &b"+player+"&7...");
+    ChatLib.chat("&7Attempting to transfer to &b"+player+"&7...");
     ChatLib.command("party transfer "+player);
     lastTranfer = Date.now();
 });

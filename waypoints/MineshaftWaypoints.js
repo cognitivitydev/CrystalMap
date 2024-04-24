@@ -60,7 +60,7 @@ register("step", () => {
         return;
     }
     if(!Settings.mineshaftShowWaypoints) return;
-    World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).filter(entity => distance(entity) < 5).forEach(entity => {
+    World.getAllEntitiesOfType(net.minecraft.entity.item.EntityArmorStand).filter(entity => distance(entity) < 8).forEach(entity => {
         var boots = new EntityLivingBase(entity.entity).getItemInSlot(1);
         if(!boots) return;
         var item = boots.getNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id");
@@ -68,7 +68,7 @@ register("step", () => {
             if(corpses.hasOwnProperty(type) && corpses[type].id == item) {
                 var found = false;
                 waypoints.forEach(waypoint => {
-                    if(distance(waypoint.location, entity) < 5) {
+                    if(distance(waypoint.location, entity) < 8) {
                         found = true;
                     }
                 });
@@ -86,7 +86,19 @@ register("step", () => {
                     command = "cc"
                 } else if(Settings.mineshaftShareChannel == 3) {
                     command = "gc"
-                }            
+                }
+                if(type.equals("LAPIS") && !Settings.mineshaftShareLapis) {
+                    return;
+                }
+                if(type.equals("TUNGSTEN") && !Settings.mineshaftShareTungsten) {
+                    return;
+                }
+                if(type.equals("UMBER") && !Settings.mineshaftShareUmber) {
+                    return;
+                }
+                if(type.equals("VANGUARD") && !Settings.mineshaftShareVanguard) {
+                    return;
+                }
                 ChatLib.command(command+" "+corpses[type].name+" Corpse: "+Math.round(entity.getX())+", "+Math.round(entity.getY())+", "+Math.round(entity.getZ()));
             }
         }
@@ -113,7 +125,7 @@ register("chat", (event) => {
         }
         var found = false;
         waypoints.forEach(waypoint => {
-            if(calculateDistance(coordinates, waypoint.location) < 5) {
+            if(calculateDistance(coordinates, waypoint.location) < 8) {
                 found = true;
             }
         })
