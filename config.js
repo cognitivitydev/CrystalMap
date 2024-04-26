@@ -6,21 +6,45 @@
 /// <reference types="../CTAutocomplete" />
 /// <reference lib="es2015" />
 
-import { @Vigilant, @SwitchProperty, @DecimalSliderProperty, @SelectorProperty, @PercentSliderProperty, @ButtonProperty, @SliderProperty, @CheckboxProperty, @ColorProperty, @NumberProperty, @TextProperty, @ParagraphProperty, Color } from "../Vigilance";
+import { @Vigilant,
+    @SwitchProperty,
+    @DecimalSliderProperty,
+    @SelectorProperty,
+    @PercentSliderProperty,
+    @ButtonProperty,
+    @SliderProperty,
+    @CheckboxProperty,
+    @ColorProperty,
+    @NumberProperty,
+    @TextProperty,
+    @ParagraphProperty,
+    Color
+} from "../Vigilance";
 
 @Vigilant("CrystalMap", "Settings", {
     getCategoryComparator: () => (a, b) => {
-        const categories = ["Map", "Glacite Tunnels", "Waypoints", "Icons", "Solvers", "Status HUD"];
+        const categories = ["General", "Waypoints", "Icons", "Solvers", "Status HUD", "Glacite Tunnels", "Developer Options"];
 
         return categories.indexOf(a.name) - categories.indexOf(b.name);
     },
-    getSubcategoryComparator: () => (a, b) => {
-        const categories = ["Display", "Ping", "Developer Options"];
 
-        return categories.indexOf(a.name) - categories.indexOf(b.name);
-    }
+    // CAUSES A CRASH WITH SEARCH BAR
+
+    // getSubcategoryComparator: () => (a, b) => {
+    //     const categories = ["Display", "Ping", "Developer Options"];
+
+    //     return categories.indexOf(a.name) - categories.indexOf(b.name);
+    // }
 })
 class Settings {
+
+    get metadata() {
+        return JSON.parse(FileLib.read("./config/ChatTriggers/modules/CrystalMap/metadata.json"));
+    }
+    get version() {
+        return this.metadata.version
+    }
+
     // HIDDEN
     @TextProperty({
         name: "Latest Version",
@@ -113,15 +137,15 @@ class Settings {
 
     @SwitchProperty({
         name: "Minimap",
-        description: "Toggles the minimap's display.",
-        category: "Map"
+        description: "Toggles the minimap's display in the Crystal Hollows.",
+        category: "General"
     })
     map = true;
 
     @ButtonProperty({
         name: "Create a Waypoint",
         description: "Opens a menu for creating waypoints.",
-        category: "Map",
+        category: "General",
         placeholder: "Open...",
     })
     openWaypointGui() {
@@ -132,7 +156,7 @@ class Settings {
     @DecimalSliderProperty({
         name: "Scale",
         description: "Changes the scale of the minimap.",
-        category: "Map",
+        category: "General",
         subcategory: "Display",
         minF: 0.5,
         maxF: 2.0
@@ -142,7 +166,7 @@ class Settings {
     @ButtonProperty({
         name: "Move GUI",
         description: "Drag the minimap around.",
-        category: "Map",
+        category: "General",
         subcategory: "Display",
         placeholder: "Move...",
     })
@@ -154,7 +178,7 @@ class Settings {
     @ButtonProperty({
         name: "Reset Location",
         description: "Resets the location of the map to the top left corner.",
-        category: "Map",
+        category: "General",
         subcategory: "Display",
         placeholder: "Reset",
     })
@@ -167,7 +191,7 @@ class Settings {
     @SliderProperty({
         name: "Ping",
         description: "Set your ping to Hypixel in milliseconds.",
-        category: "Map",
+        category: "General",
         subcategory: "Ping",
         min: 0,
         max: 800
@@ -176,8 +200,8 @@ class Settings {
 
     @ButtonProperty({
         name: "Automatically Ping",
-        description: "Attempt to update your ping. This may not be 100% accurate due to varying server lag.",
-        category: "Map",
+        description: "Attempt to update your ping. This may not be completely accurate due to varying server lag.",
+        category: "General",
         subcategory: "Ping",
         placeholder: "Ping...",
     })
@@ -189,64 +213,56 @@ class Settings {
     @CheckboxProperty({
         name: "&cEnable Developer Options",
         description: "Only enable this if you know what you're doing!",
-        category: "Map",
-        subcategory: "Developer Options"
+        category: "Developer Options",
     })
     developer = false;
 
     // REQUIRES "Enable Developer Options"
     @ParagraphProperty({
         name: "Route Repository",
-        category: "Map",
-        subcategory: "Developer Options"
+        category: "Developer Options",
     })
     routeURL = "https://raw.githubusercontent.com/cognitivitydev/CrystalHollows/main/gemstones.json";
 
     // REQUIRES "Enable Developer Options"
     @SwitchProperty({
         name: "Metal Detector Debug",
-        category: "Map",
-        subcategory: "Developer Options"
+        category: "Developer Options",
     })
     metalDetectorDebug = false;
 
     // REQUIRES "Enable Developer Options"
     @CheckboxProperty({
         name: "Jade Crystal",
-        category: "Map",
-        subcategory: "Developer Options"
+        category: "Developer Options",
     })
     jadeCrystal = false;
 
     // REQUIRES "Enable Developer Options"
     @CheckboxProperty({
         name: "Amber Crystal",
-        category: "Map",
-        subcategory: "Developer Options"
+        category: "Developer Options",
     })
     amberCrystal = false;
 
     // REQUIRES "Enable Developer Options"
     @CheckboxProperty({
         name: "Amethyst Crystal",
-        category: "Map",
-        subcategory: "Developer Options"
+        category: "Developer Options",
     })
     amethystCrystal = false;
 
     // REQUIRES "Enable Developer Options"
     @CheckboxProperty({
         name: "Sapphire Crystal",
-        category: "Map",
-        subcategory: "Developer Options"
+        category: "Developer Options",
     })
     sapphireCrystal = false;
 
     // REQUIRES "Enable Developer Options"
     @CheckboxProperty({
         name: "Topaz Crystal",
-        category: "Map",
-        subcategory: "Developer Options"
+        category: "Developer Options",
     })
     topazCrystal = false;
 
@@ -405,6 +421,7 @@ class Settings {
     })
     mineshaftExitKeybind = true;
 
+    // REQUIRES "Exit Waypoint After Scrap"
     @SliderProperty({
         name: "Exit Period",
         description: "Period of time to warp out after obtaining a scrap (in milliseconds).",
@@ -415,13 +432,32 @@ class Settings {
     })
     mineshaftExitPeriod = 7000;
 
-    @ParagraphProperty({
-        name: "Exit Location",
-        description: "Specifies the name of the warp to teleport to when you obtain a scrap (eg: \"camp\", \"mines\").",
+    @SwitchProperty({
+        name: "Cold Warning",
+        description: "Shows a warning and allows you to warp out with a keybind when you are about to freeze.\nThe keybind can be changed in controls (defaults to Y).",
         category: "Glacite Tunnels",
         subcategory: "Mineshaft",
     })
-    mineshaftExitLocation = "camp";
+    coldWarning = true;
+
+    // REQUIRES "Cold Warning"
+    @SliderProperty({
+        name: "Cold Warning Threshold",
+        description: "Specifies the amount of time (in milliseconds) required before showing the cold warning.",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+        min: 4000,
+        max: 30000
+    })
+    coldWarningThreshold = 7000;
+    
+    @ParagraphProperty({
+        name: "Exit Location",
+        description: "Specifies the name of the warp to teleport to when you obtain a scrap or are about to freeze (eg: \"camp\", \"mines\").",
+        category: "Glacite Tunnels",
+        subcategory: "Mineshaft",
+    })
+    glaciteExitLocation = "camp";
 
     @SwitchProperty({
         name: "Beacon Waypoints",
@@ -1120,10 +1156,13 @@ class Settings {
         this.addDependency("Send Mineshaft Waypoints in Chat", "Show Waypoints in Mineshafts");
         this.addDependency("Mineshaft Waypoints Channel", "Send Mineshaft Waypoints in Chat");
         this.addDependency("Mineshaft Chat Message", "Send Mineshaft in Chat");
-        this.addDependency("Share Corpse Locations", "Share Lapis Corpse");
-        this.addDependency("Share Corpse Locations", "Share Tungsten Corpse");
-        this.addDependency("Share Corpse Locations", "Share Umber Corpse");
-        this.addDependency("Share Corpse Locations", "Share Vanguard Corpse");
+        this.addDependency("Share Lapis Corpse", "Share Corpse Locations");
+        this.addDependency("Share Tungsten Corpse", "Share Corpse Locations");
+        this.addDependency("Share Umber Corpse", "Share Corpse Locations");
+        this.addDependency("Share Vanguard Corpse", "Share Corpse Locations");
+        this.addDependency("Exit Period", "Exit Waypoint After Scrap");
+        this.addDependency("Cold Warning Threshold", "Cold Warning");
+
 
         this.addDependency("Only Show Waypoints in Crystal Hollows", "Show Waypoints from Chat");
         this.addDependency("Automatically Parse Waypoints from Chat", "Show Waypoints from Chat");
@@ -1188,7 +1227,7 @@ class Settings {
         this.addDependency("Metal Detector Line Color", "Metal Detector Solver");
         this.addDependency("Metal Detector Beacon Color", "Metal Detector Solver");
 
-        this.setCategoryDescription("Map", "&5[--- &d&lCRYSTALMAP &r&5---]\n\n\n&b/cm [name] [coordinates]  &8- &7Creates a waypoint with a name or coordinates (if specified).\n&b/cm settings  &8- &7Opens settings.\n&b/cm route  &8- &7Opens a menu for creating automatic routes.\n&b/cm gui  &8- &7Opens a menu to change the location of the map.\n&b/cm remove &3<name>  &8- &7Removes a waypoint by name.\n&b/cm ping  &8- &7Updates your ping.\n\n\nFound a bug? Report it at:\n&3&nhttps://github.com/cognitivitydev/CrystalMap\n\n&7Version 1.1.1")
+        this.setCategoryDescription("General", "&5[--- &d&lCRYSTALMAP &r&5---]\n\n\n&b/cm [name] [coordinates]  &8- &7Creates a waypoint with a name or coordinates (if specified).\n&b/cm settings  &8- &7Opens settings.\n&b/cm route  &8- &7Opens a menu for creating automatic routes.\n&b/cm gui  &8- &7Opens a menu to change the location of the map.\n&b/cm remove &3<name>  &8- &7Removes a waypoint by name.\n&b/cm ping  &8- &7Updates your ping.\n\n\nFound a bug? Report it at:\n&3&nhttps://github.com/cognitivitydev/CrystalMap\n\n&7Version "+this.version)
         this.setCategoryDescription("Icons", "&c&lDISCLAIMER\n\n&7Icons using the \"FurfSky\" type are from the &5FurfSky Reborn &7texture pack.\n&7Their discord and the download to the texture pack can be found at &9&ndiscord.gg/fsr&7.\n\n\n\nUsing a scale other than 0.5, 1.0, or 2.0 may cause the icon to appear distorted.");
     }
 }

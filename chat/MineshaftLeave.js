@@ -1,3 +1,11 @@
+/* 
+ * This module can be found at https://github.com/cognitivitydev/CrystalMap/.
+ * You can report any issues or add suggestions there.
+ */
+
+/// <reference types="../../CTAutocomplete" />
+/// <reference lib="es2015" />
+
 import {
     UIContainer,
     UIBlock,
@@ -32,13 +40,13 @@ const Color = Java.type("java.awt.Color");
 
 var lastScrap = 0;
 
-new KeyBind("Exit Mineshaft", Keyboard.KEY_Y, "CrystalMap (ChatTriggers)").registerKeyPress(() => {
+export function onWarpScrap() {
     if(Date.now()-lastScrap < Settings.mineshaftExitPeriod) {
         ChatLib.chat("&b[CrystalMap] &7Warping out of mineshaft...");
         lastScrap = 0;
-        ChatLib.command("warp "+Settings.mineshaftExitLocation);
+        ChatLib.command("warp "+Settings.glaciteExitLocation);
     }
-});
+}
 
 register("chat", (event) => {
     var formattedMessage = ChatLib.getChatMessage(event);
@@ -66,7 +74,7 @@ register("renderOverlay", () => {
         .setY((20).percent())
         .setChildOf(rectangle);
 
-    var text = new UIText("§7Press §e["+Keyboard.getKeyName(Client.getKeyBindFromDescription("Exit Mineshaft").getKeyCode())+"] §7to warp out.")
+    var text = new UIText("§7Press §e["+Keyboard.getKeyName(Client.getKeyBindFromDescription("Warp Out").getKeyCode())+"] §7to warp out.")
         .setColor(new Color(1, 1, 1, 1))
         .setX(new CenterConstraint())
         .setY((50).percent())

@@ -32,6 +32,7 @@ import {
 } from "../../Elementa";
 import { getArea, inGlaciteTunnels } from "../WaypointManager";
 import Settings from "../config";
+import { getColdTimer } from "./ColdWarning";
 
 const Color = Java.type("java.awt.Color");
 const SimpleDateFormat = Java.type("java.text.SimpleDateFormat");
@@ -64,11 +65,6 @@ var lastPowder = {
 
 var commissionHistory = [];
 
-var coldUpdates = [];
-var cold = Infinity;
-var updateRate = 0;
-var untilDeath = 0;
-
 var inMineshaft = false;
 
 register("renderOverlay", () => {
@@ -87,12 +83,7 @@ register("renderOverlay", () => {
         .setHeight(new AdditiveConstraint(new ChildBasedSizeConstraint(), (10).pixels()))
         .setChildOf(hud);
 
-    var time;
-    if(coldUpdates.length == 0) time = "§cN/A";
-    else if(coldUpdates.length < 3) time = "§8Calculating...";
-    else if(untilDeath-Date.now() < 15000) time = "§c§l"+toClock(untilDeath-Date.now());
-    else time = "§9"+toClock(untilDeath-Date.now());
-    new UIText("§7Time Until Death: "+time)
+    new UIText("§7Time Until Death: "+getColdTimer())
         .setX((5).pixels())
         .setY((5).pixels())
         .setChildOf(rectangle);
@@ -172,7 +163,6 @@ register("chat", (event) => {
 register("renderScoreboard", () => {
     if(!inGlaciteTunnels(true)) return;
     var lines = Scoreboard.getLines();
-    var isCold = false;
     lines.forEach((formatted) => {
         let line = ChatLib.removeFormatting(formatted).replace(/[^A-z0-9 :(),.\-'û᠅]/g, "");
         if(line.startsWith("᠅ Gemstone: ")) {
@@ -199,26 +189,7 @@ register("renderScoreboard", () => {
                 lastPowder.glacite = Date.now();
             }
         }
-        if(line.startsWith("Cold: ")) {
-            isCold = true;
-            var currentCold = parseInt(line.replace("Cold: ", ""));
-            if(cold != currentCold) {
-                coldUpdates.push(Date.now());
-                updateRate = (Date.now()-coldUpdates[0])/coldUpdates.length;
-                untilDeath = Date.now()+((100+currentCold)*updateRate);
-            }
-            cold = currentCold;
-            if(coldUpdates.length > 10) {
-                coldUpdates.splice(0, coldUpdates.length-11);
-            }
-        }
     });
-    if(!isCold) {
-        coldUpdates = [];
-        cold = Infinity;
-        updateRate = 0;
-        untilDeath = 0;
-    }
 });
 
 register("step", () => {
@@ -270,6 +241,7 @@ function toClock(ms, hours = false) {
     }
     return shortFormatGMT.format(new JavaDate(ms));
 }
+
 function addCommas(num) {
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }

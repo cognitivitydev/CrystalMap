@@ -17,6 +17,7 @@ import "./chat/MineshaftLeave";
 import "./chat/PartyTransfer";
 import "./chat/ShareProtection";
 import "./waypoints/EntityWaypoints";
+import "./render/ColdWarning";
 import "./render/GlaciteStatus";
 import "./render/MapRenderer";
 import "./render/RenderUtils";
@@ -27,16 +28,14 @@ import "./waypoints/MineshaftWaypoints";
 import "./waypoints/EntityWaypoints";
 import "./WaypointManager";
 import "./CrystalMapCommand";
+import "./KeyBinds";
 import { refreshPing } from "./render/RenderUtils";
 
-const meta = JSON.parse(FileLib.read("./config/ChatTriggers/modules/CrystalMap/metadata.json"));
-const version = meta.version;
-
 register("worldLoad", () => {
-    if(Settings.latestVersion != version) {
-        Settings.latestVersion = version;
+    if(Settings.latestVersion != Settings.version) {
+        Settings.latestVersion = Settings.version;
         ChatLib.chat(ChatLib.getCenteredText("&5&m                                        &d CRYSTAL MAP &5&m                                        "));
-        ChatLib.chat(ChatLib.getCenteredText("&8VERSION "+version));
+        ChatLib.chat(ChatLib.getCenteredText("&8VERSION "+Settings.version()));
         ChatLib.chat("");
         ChatLib.chat("  &7Thank you for downloading &dCrystalMap&7!");
         ChatLib.chat("  &7To start, type &5/crystalmap &7to create waypoints.");
